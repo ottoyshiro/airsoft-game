@@ -1,0 +1,418 @@
+[gd_scene format=3 uid="uid://dfb0k4dsxyd5b"]
+
+[ext_resource type="Texture2D" uid="uid://banepu3p47u4s" path="res://Assets/Texturelabs_Metal_232S.jpg" id="1_uyo03"]
+[ext_resource type="Texture2D" uid="uid://btfiofdoljlf8" path="res://Assets/2017-03-13-10-06-22.jpg" id="3_mij0o"]
+[ext_resource type="PackedScene" uid="uid://clvcoocr5id0p" path="res://Scenes/Items/cube_view.tscn" id="3_uyo03"]
+[ext_resource type="AudioStream" uid="uid://d374kdtgb6mad" path="res://Assets/Sounds/563465__nicholasdaryl__itempickup.wav" id="4_p106b"]
+[ext_resource type="AudioStream" uid="uid://bdv4s8bpjebep" path="res://Assets/Sounds/soundreality-sound-of-mouse-click-4-478760.wav" id="5_1uwgm"]
+
+[sub_resource type="GDScript" id="GDScript_ik2lk"]
+resource_name = "pressure_table"
+script/source = "extends Node3D
+
+var unlocked : bool = false
+@onready var mvp_level: Node3D = $\"../..\"
+
+func run_anim():
+	await mvp_level.is_table_unlocked()
+"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3lvf6"]
+albedo_color = Color(0.48178947, 0.48178947, 0.48178947, 1)
+albedo_texture = ExtResource("1_uyo03")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p106b"]
+shading_mode = 0
+albedo_texture = ExtResource("3_mij0o")
+uv1_scale = Vector3(1, 0.94, 1)
+uv1_offset = Vector3(0.26, 0, 0)
+
+[sub_resource type="GDScript" id="GDScript_3lvf6"]
+resource_name = "table_press"
+script/source = "extends StaticBody3D
+
+
+@onready var cube_view: Node3D = $\"../../CubeView\"
+@onready var animation_player: AnimationPlayer = $\"../../CSGBox3D4/StaticBody3D/AnimationPlayer\"
+@onready var camera_3d: Camera3D = $\"../../CSGBox3D4/StaticBody3D/Camera3D\"
+@onready var table_btn: StaticBody3D = $\"../../CSGBox3D4/StaticBody3D\"
+#@onready var collision_shape_3d: CollisionShape3D = $\"../Cube_spot/CollisionShape3D\"
+@onready var cube_spot: StaticBody3D = $\"../../CSGBox3D3/Cube_spot\"
+@onready var collision_shape_3d: CollisionShape3D = $\"../../CSGBox3D3/Cube_spot/CollisionShape3D\"
+@onready var audio_stream_player_3d: AudioStreamPlayer3D = $\"../../AudioStreamPlayer3D\"
+
+var cube_placed : bool = false
+var cube_instance = null
+
+func _ready() -> void:
+	self.add_to_group(\"Interactable\")
+	cube_spot.visible = false
+	#collision_shape_3d.disabled = true
+
+func anim_handler(player):
+	audio_stream_player_3d.play()
+	camera_3d.current = true
+	player.locked_controls = true
+	if GameManager.has_cube and !cube_placed:
+		player.held_items[player.held_item.item_id].visible = false
+		#player.held_item.queue_free()
+		cube_instance = player.held_item
+		player.crosshair.visible = false
+		player.held_item = null
+		animation_player.play(\"insert_cube\")
+		player.locked_controls = true
+		cube_placed = true
+		table_btn.set_cube_placed(cube_placed)
+		await get_tree().create_timer(1).timeout
+		player.locked_controls = false
+		GameManager.has_cube = false
+		player.crosshair.visible = true
+		#self.remove_from_group(\"Interactable\")
+		cube_spot.get_cube_instance(cube_instance)
+		cube_spot.add_to_group(\"Interactable\")
+		cube_spot.visible = true
+		cube_spot.get_child(0).disabled = false
+		#collision_shape_3d.disabled = false
+	#if Input.is_action_just_pressed(\"left_click\") and cube_placed:
+		#player.held_items[player.held_item.item_id].visible = true
+		#player.held_item = cube_instance
+		#cube_placed = false
+		#player.locked_controls = false
+	
+	player.locked_controls = false
+	camera_3d.current = false
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3lvf6"]
+size = Vector3(0.20220947, 0.4, 0.20672607)
+
+[sub_resource type="GDScript" id="GDScript_uyo03"]
+resource_name = "table_press_btn"
+script/source = "extends StaticBody3D
+
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var camera_3d: Camera3D = $Camera3D
+@onready var cube_view: Node3D = $\"../../CubeView\"
+@onready var cube_spot: StaticBody3D = $\"../../CSGBox3D3/Cube_spot\"
+@onready var pressure_table: Node3D = $\"../..\"
+@onready var audio_stream_player_3d_2: AudioStreamPlayer3D = $\"../../AudioStreamPlayer3D2\"
+
+var cube_placed : bool = false
+var cube_instance = null
+var activated : bool = false
+
+func _ready() -> void:
+	self.add_to_group(\"Interactable\")
+
+func set_cube_placed(cube_placed):
+	self.cube_placed = cube_placed
+
+func anim_handler(player):
+	camera_3d.current = true
+	player.crosshair.visible = false
+	player.locked_controls = true
+	audio_stream_player_3d_2.play(0.08)
+	await get_tree().create_timer(0.09).timeout
+	audio_stream_player_3d_2.stop()
+	if cube_placed and !activated:
+		#if player.held_items != null:
+			#player.held_items[player.held_item.item_id].visible = false
+		cube_view.visible = true
+		player.locked_controls = true
+		animation_player.play(\"activating_plate\")
+		await get_tree().create_timer(1).timeout
+		player.locked_controls = false
+		activated = true
+		cube_spot.set_activated(activated)
+		pressure_table.unlocked = true
+		#camera_3d.current = false
+		await pressure_table.run_anim()
+		player.crosshair.visible = true
+		return
+	animation_player.play(\"press_btn\")
+	if !cube_placed:
+		animation_player.play(\"activating_plate\")
+		await get_tree().create_timer(1).timeout
+		animation_player.play_backwards(\"activating_plate\")
+		await get_tree().create_timer(1).timeout
+		player.locked_controls = false
+		player.camera.current = true
+		player.crosshair.visible = true
+		player.feedback.exibir_texto_digitado(\"I need to put something into that\")
+		return
+	if activated:
+		animation_player.play_backwards(\"activating_plate\")
+		await get_tree().create_timer(1).timeout
+		#cube_view.visible = false
+		activated = false
+		pressure_table.unlocked = false
+		#camera_3d.current = false
+		cube_spot.set_activated(activated)
+		await pressure_table.run_anim()
+		player.crosshair.visible = true
+		
+	player.locked_controls = false
+	camera_3d.current = false
+	player.crosshair.visible = true
+	player.camera.current = true
+"
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_3lvf6"]
+data = PackedVector3Array(-0.05, -0.05, 0.05, -0.05, -0.05, -0.05, -0.05, 0.05, -0.05, 0.05, -0.05, -0.05, -0.05, -0.05, -0.05, -0.05, -0.05, 0.05, -0.05, 0.05, -0.05, -0.05, -0.05, -0.05, 0.05, -0.05, -0.05, -0.05, 0.05, -0.05, -0.05, 0.05, 0.05, -0.05, -0.05, 0.05, -0.05, -0.05, 0.05, -0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, -0.05, 0.05, 0.05, -0.05, 0.05, -0.05, -0.05, -0.05, 0.05, 0.05, -0.05, 0.05, 0.05, -0.05, -0.05, 0.05, 0.05, 0.05, 0.05, -0.05, 0.05, -0.05, -0.05, 0.05, 0.05, -0.05, -0.05, 0.05, -0.05, 0.05, 0.05, 0.05, 0.05, 0.05, -0.05, -0.05, 0.05, 0.05, -0.05, -0.05, 0.05, -0.05, -0.05, 0.05, -0.05, 0.05, 0.05, -0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, -0.05, 0.05, -0.05, -0.05)
+
+[sub_resource type="Animation" id="Animation_uyo03"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CubeView:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CubeView:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.89853734, 0.88416463, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CSGBox3D5:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.90000015, 0.49491745, 7.450581e-09)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("CSGBox3D4:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.8830035, 0.2941365, 0.47579953)]
+}
+
+[sub_resource type="Animation" id="Animation_mjdt6"]
+resource_name = "activating_plate"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CubeView:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0.89853734, 0.60018903, 0), Vector3(0.89853734, 0.40018904, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CSGBox3D5:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0.90000015, 0.49491745, 7.450581e-09), Vector3(0.90000015, 0.29491746, 7.450581e-09)]
+}
+
+[sub_resource type="Animation" id="Animation_3lvf6"]
+resource_name = "insert_cube"
+length = 1.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CubeView:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CubeView:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.8333333, 1.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.89853734, 0.88416463, 0), Vector3(0.89853734, 0.60018903, 0), Vector3(0.89853734, 0.60018903, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_ik2lk"]
+resource_name = "press_btn"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CSGBox3D4:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.8830035, 0.2941365, 0.47579953), Vector3(0.8830035, 0.2941365, 0.4591678), Vector3(0.8830035, 0.2941365, 0.47579953)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_mjdt6"]
+_data = {
+&"RESET": SubResource("Animation_uyo03"),
+&"activating_plate": SubResource("Animation_mjdt6"),
+&"insert_cube": SubResource("Animation_3lvf6"),
+&"press_btn": SubResource("Animation_ik2lk")
+}
+
+[sub_resource type="GDScript" id="GDScript_mjdt6"]
+resource_name = "cube_spot"
+script/source = "extends StaticBody3D
+
+
+@onready var cube_view: Node3D = $\"../../CubeView\"
+@onready var collision_shape_3d: CollisionShape3D = $CollisionShape3D
+@onready var table_btn: StaticBody3D = $\"../../CSGBox3D4/StaticBody3D\"
+@onready var animation_player: AnimationPlayer = $\"../../CSGBox3D4/StaticBody3D/AnimationPlayer\"
+@onready var table: StaticBody3D = $\"../../CSGBox3D5/StaticBody3D\"
+@onready var audio_stream_player_3d: AudioStreamPlayer3D = $\"../../AudioStreamPlayer3D\"
+
+var cube_instance = null
+var activated : bool = false
+
+func _ready() -> void:
+	self.add_to_group(\"Interactable\")
+	self.visible = false
+	collision_shape_3d.disabled = true
+
+func get_cube_instance(cube_instance):
+	self.cube_instance = cube_instance
+
+func set_activated(activated):
+	self.activated = activated
+
+func pick_cube(player):
+	audio_stream_player_3d.play()
+	if player.held_item == null:
+		if cube_instance.can_be_picked or GameManager.has_gloves:
+			if !activated:
+				player.held_item = cube_instance
+				player.held_items[player.held_item.item_id].visible = true
+				self.visible = false
+				collision_shape_3d.disabled = true
+				GameManager.has_cube = true
+				table.cube_placed = false
+				cube_view.visible = false
+				table.cube_placed = false
+				table.table_btn.set_cube_placed(table.cube_placed)
+				return
+		print(\"vai queimar tu mao\")
+		return
+	print(\"voce ja tem um item\")
+	#self.remove_from_group(\"Interactable\")
+	
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_uyo03"]
+size = Vector3(0.201, 0.2, 0.2)
+
+[node name="pressure_table" type="Node3D" unique_id=1628354484]
+script = SubResource("GDScript_ik2lk")
+
+[node name="CubeView" parent="." unique_id=43290667 instance=ExtResource("3_uyo03")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.89853734, 0.88416463, 0)
+visible = false
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=268448532]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3915039, -0.049999982, 0.0015258789)
+use_collision = true
+size = Vector3(0.1830078, 0.90000004, 0.98742676)
+material = SubResource("StandardMaterial3D_3lvf6")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="." unique_id=737206984]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.294983, -0.049999982, -0.0012207031)
+use_collision = true
+size = Vector3(0.18996581, 0.90000004, 0.98095703)
+material = SubResource("StandardMaterial3D_3lvf6")
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="." unique_id=1473971258]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.90000015, 0.49491745, 7.450581e-09)
+use_collision = true
+size = Vector3(0.2, 0.001, 0.2)
+material = SubResource("StandardMaterial3D_p106b")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="CSGBox3D5" unique_id=1472379270 groups=["Interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45000005, -0.19491744, -7.450581e-09)
+script = SubResource("GDScript_3lvf6")
+
+[node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="CSGBox3D5/StaticBody3D" unique_id=657693321]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45156854, 0.016542315, -0.0026550293)
+shape = SubResource("BoxShape3D_3lvf6")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="." unique_id=1623715227]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0.8830035, 0.2941365, 0.47579953)
+size = Vector3(0.1, 0.1, 0.1)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="CSGBox3D4" unique_id=1988838756 groups=["Interactable"]]
+script = SubResource("GDScript_uyo03")
+
+[node name="Camera3D" type="Camera3D" parent="CSGBox3D4/StaticBody3D" unique_id=1583908533]
+transform = Transform3D(1, 0, 0, 0, -0.7071069, 0.70710677, 0, -0.70710677, -0.7071069, 0.009101152, 0.6675372, -1.2857264)
+fov = 36.2
+
+[node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="CSGBox3D4/StaticBody3D" unique_id=1887838366]
+shape = SubResource("ConcavePolygonShape3D_3lvf6")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CSGBox3D4/StaticBody3D" unique_id=722981009]
+root_node = NodePath("../../..")
+libraries/ = SubResource("AnimationLibrary_mjdt6")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="." unique_id=719463697]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4500001, 0.3, 0)
+use_collision = true
+size = Vector3(1.9, 0.4, 1)
+material = SubResource("StandardMaterial3D_3lvf6")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="CSGBox3D3" unique_id=628890051]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45000005, 0.050000012, 7.450581e-09)
+operation = 2
+size = Vector3(0.2, 0.3, 0.2)
+
+[node name="Cube_spot" type="StaticBody3D" parent="CSGBox3D3" unique_id=749059305 groups=["Interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.40000004, 0, -0.2)
+script = SubResource("GDScript_mjdt6")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CSGBox3D3/Cube_spot" unique_id=1740397835]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.049826086, 0.30002677, 0.19999999)
+shape = SubResource("BoxShape3D_uyo03")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=1210094419]
+stream = ExtResource("4_p106b")
+
+[node name="AudioStreamPlayer3D2" type="AudioStreamPlayer3D" parent="." unique_id=1784687897]
+stream = ExtResource("5_1uwgm")
+volume_db = -20.0

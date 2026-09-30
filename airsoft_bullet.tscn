@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://dsugy4kvk5tnu"]
+
+[ext_resource type="Script" uid="uid://dt5dayj8iujfk" path="res://airsoft_non_realist.gd" id="1_2xvs0"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_2xvs0"]
+friction = 0.1
+
+[sub_resource type="SphereMesh" id="SphereMesh_bhunq"]
+radius = 0.063
+height = 0.125
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_riqys"]
+albedo_color = Color(0.74978, 0.74978, 0.74977994, 1)
+metallic = 1.0
+roughness = 0.14
+emission_enabled = true
+emission = Color(0.3019608, 0.47843137, 0, 1)
+emission_energy_multiplier = 4.45
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_bhunq"]
+radius = 0.063
+
+[node name="airsoft_bullet" type="RigidBody3D" unique_id=1151429983 groups=["bullet"]]
+mass = 0.002
+physics_material_override = SubResource("PhysicsMaterial_2xvs0")
+gravity_scale = 0.0
+continuous_cd = true
+contact_monitor = true
+max_contacts_reported = 1
+script = ExtResource("1_2xvs0")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=315015196]
+mesh = SubResource("SphereMesh_bhunq")
+surface_material_override/0 = SubResource("StandardMaterial3D_riqys")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=860353075]
+shape = SubResource("SphereShape3D_bhunq")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

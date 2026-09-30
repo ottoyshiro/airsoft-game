@@ -1,0 +1,565 @@
+[gd_scene format=3 uid="uid://c225oea00bq2l"]
+
+[ext_resource type="PackedScene" uid="uid://c66ioytj6hjyp" path="res://Scenes/key_root.tscn" id="1_6t5aa"]
+[ext_resource type="Shader" uid="uid://bom2l3uppib8w" path="res://Scripts/player.gdshader" id="1_v0iea"]
+[ext_resource type="PackedScene" uid="uid://bmpubpcccaglg" path="res://Scenes/device.tscn" id="2_6t5aa"]
+[ext_resource type="PackedScene" uid="uid://7w5lhwyw0e4s" path="res://Scenes/key_view.tscn" id="2_vgqql"]
+[ext_resource type="Shader" uid="uid://cftbecr5ebr5l" path="res://Scenes/player-glitch.gdshader" id="5_fkybt"]
+
+[sub_resource type="GDScript" id="GDScript_f60y1"]
+resource_name = "player"
+script/source = "extends CharacterBody3D
+
+
+@export var SPEED = 5.0
+@export var camera_sensibility : float = 0.005
+@export var key_scene : PackedScene
+
+@onready var camera_pivot : Node3D = $CameraPivot
+@onready var camera : Camera3D = $CameraPivot/Camera3D
+@onready var camera_anim_player = $camera_animation
+@onready var ray = $CameraPivot/Camera3D/RayCast3D
+@onready var crosshair = $crosshair/Control
+@onready var hold_position: Marker3D = $CameraPivot/Camera3D/HoldPosition
+@onready var key: RigidBody3D = $CameraPivot/Camera3D/HoldPosition/key
+@onready var glitch: ColorRect = $UI/Glitch
+@onready var animation_device: AnimationPlayer = $CameraPivot/Camera3D/AnimationPlayer
+@onready var flash: ColorRect = $UI/Flash
+
+const JUMP_VELOCITY = 4.5
+var is_crouching := false
+var is_running := false
+var mouse_input := Vector2.ZERO
+var held_items = {}
+var held_item = null
+var current_item = \"\"
+var camera_pitch := 0.0
+var locked_controls = false
+
+func check_interaction():
+	if ray.is_colliding():
+		var obj = ray.get_collider()
+
+		if obj is RigidBody3D and Input.is_action_just_pressed(\"left_click\"):
+			pick_item(obj)
+
+	if Input.is_action_just_pressed(\"right_click\"):
+		drop_item()
+
+func _ready():
+	camera_pivot.get_child(0).play(\"stand\")
+	held_items = {
+		\"key\": $CameraPivot/Camera3D/HoldPosition/key_view,
+		#\"gear\": $CameraPivot/Camera3D/HoldPosition/GearView,
+		#\"lantern\": $CameraPivot/Camera3D/HoldPosition/LanternView
+	}
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	Input.use_accumulated_input = false
+
+func _input(event):
+	if event is InputEventMouseMotion:
+		mouse_input += event.relative
+
+
+	# recaptura mouse
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+
+			if Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
+
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+				mouse_input = Vector2.ZERO
+				
+				if held_item != null:
+					held_items[held_item.item_id].visible = false
+					await get_tree().process_frame
+					held_items[held_item.item_id].visible = true
+	
+
+func _process(delta):
+	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		# rotação horizontal
+		camera_pivot.rotate_y(
+			-mouse_input.x * camera_sensibility
+		)
+		# acumula pitch
+		camera_pitch += -mouse_input.y * camera_sensibility
+		# limita pitch
+		camera_pitch = clamp(
+			camera_pitch,
+			deg_to_rad(-80),
+			deg_to_rad(80)
+		)
+		# aplica pitch
+		camera.rotation.x = camera_pitch
+
+		mouse_input = Vector2.ZERO
+
+func _unhandled_input(event: InputEvent) -> void:
+	if !locked_controls:
+		if event.is_action_pressed(\"run\"):
+			if not is_crouching:
+				SPEED = 8.5
+			is_running = true
+		elif event.is_action_released(\"run\"):
+			if not is_crouching:
+				SPEED = 5.0
+			is_running = false
+		if event.is_action_pressed(\"crouch\"):
+			is_crouching = true
+			SPEED = 5.0
+			#$standing_colision.disabled=true
+			#$crouched_collision.disabled=false
+			camera_pivot.get_child(0).play(\"crouch\")
+		elif event.is_action_released(\"crouch\"):
+			is_crouching = false
+			#$standing_colision.disabled=false
+			#$crouched_collision.disabled=true
+			camera_pivot.get_child(0).play(\"stand\")
+			if Input.is_action_pressed(\"run\"):
+				SPEED = 8.5
+				is_running = true
+			else:
+				SPEED = 5.0
+				is_running = false
+		if event.is_action_pressed(\"change\"):
+			animation_device.play(\"change\")
+			if glitch.has_method(\"change\"):
+				locked_controls = true
+				await glitch.change()
+				#flash.visible = true
+				var level = self.get_parent()
+				if level.has_method(\"change_epoch\"):
+					level.change_epoch()
+				#await get_tree().create_timer(0.2).timeout
+				#flash.visible = false
+				locked_controls = false
+				await get_tree().create_timer(0.5).timeout
+				animation_device.play_backwards(\"change\")
+		if event is InputEventMouseButton:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			
+		elif event.is_action_pressed(\"pause\"):
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		if Input.is_action_just_pressed(\"right_click\"):
+			drop_item()
+			
+func _physics_process(delta: float) -> void:
+	if !locked_controls:
+		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+			return
+		check_for_interactable_pickable()
+		if not is_on_floor():
+			velocity += get_gravity() * delta
+
+		if Input.is_action_just_pressed(\"ui_accept\") and is_on_floor():
+			velocity.y = JUMP_VELOCITY
+
+		var input_dir := Input.get_vector(\"move_left\", \"move_right\", \"move_forward\", \"move_backwards\")
+		var direction :Vector3= (camera_pivot.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+		if direction:
+			#camera_anim_player.play(\"camera_walking\")
+			velocity.x = direction.x * SPEED
+			velocity.z = direction.z * SPEED
+		else:
+			#camera_anim_player.play(\"camera_idle\")
+			velocity.x = move_toward(velocity.x, 0, SPEED)
+			velocity.z = move_toward(velocity.z, 0, SPEED)
+
+		move_and_slide()
+		check_interaction()
+
+		
+func check_for_interactable_pickable():
+	if ray.is_colliding():
+		var obj = ray.get_collider()
+		if obj == null:
+			return
+		if obj.is_in_group(\"Interactable\"):
+			crosshair.set_active(true)
+			if obj.has_method(\"toggle_drawer\"):
+				if Input.is_action_just_pressed(\"interact\"):
+					obj.toggle_drawer()
+			if obj.has_method(\"run_anim\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+					camera.current = false
+					await obj.run_anim(self)
+					camera.current = true
+			if obj.has_method(\"colect\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+					obj.colect()
+				
+		if obj.is_in_group(\"Pickable\"):
+			pass
+			#print(str(obj) + \"pickable\")
+			#crosshair.get_child(0).set_active(true)
+		if obj.has_method(\"pick_item\"):
+			if Input.is_action_just_pressed(\"left_click\"):
+				obj.pick_item()
+
+	else:
+		crosshair.set_active(false)
+
+func die():
+	#GameManager.collected_gears =0
+	#GameManager.has_garden_key = false
+	get_tree().reload_current_scene()
+
+func hold_item(item_id):
+
+	current_item = item_id
+
+	for item in held_items.values():
+		item.visible = false
+
+	if held_items.has(item_id):
+		held_items[item_id].visible = true
+
+func force_recover_item(item):
+	print(\"Force recovery\")
+
+	item.freeze = false
+	item.visible = true
+	item.state = item.State.WORLD
+
+	item.global_position = hold_position.global_position
+	item.linear_velocity = Vector3.ZERO
+	item.angular_velocity = Vector3.ZERO
+
+func toggle_crosshair():
+	if crosshair.get_children()[0].has_method(\"toggle_visibility\"):
+		crosshair.get_children()[0].toggle_visibility()
+
+func pick_item(item: RigidBody3D):
+	if held_item != null:
+		return
+	
+	if item.item_id == \"key\":
+		print(\"com energia\")
+		GameManager.has_energy = true
+	
+	held_items[item.item_id].visible = true
+	
+	held_item = item
+
+	item.owner_player = self
+	item.state = item.State.HELD
+	#item.reparent(self.hold_position)
+	item.freeze = true
+	item.visible = false
+	item.sleeping = true
+
+	item.freeze = true
+	item.visible = false
+	item.linear_velocity = Vector3.ZERO
+	item.angular_velocity = Vector3.ZERO
+
+func drop_item():
+	if held_item == null:
+		return
+
+	var item = held_item
+	
+	if item.item_id == \"key\":
+		print(\"sem energia\")
+		GameManager.has_energy = false
+
+	#item.reparent(get_tree().current_scene)
+	item.freeze = false
+	item.visible = true
+	item.sleeping = false
+	
+	
+	held_items[item.item_id].visible = false
+
+	item.state = item.State.WORLD
+	item.owner_player = null
+
+	item.global_position = hold_position.global_position
+
+	item.freeze = false
+	item.visible = true
+
+	var dir = -camera.global_transform.basis.z
+	item.linear_velocity = Vector3.ZERO
+	item.angular_velocity = Vector3.ZERO
+
+	item.apply_impulse(dir * 2.5 + Vector3.UP * 0.5, Vector3.ZERO)
+	
+	item.axis_lock_angular_x = true
+	item.axis_lock_angular_z = true
+	item.axis_lock_angular_y = true
+	
+	await get_tree().create_timer(0.2).timeout
+
+	item.axis_lock_angular_x = false
+	item.axis_lock_angular_z = false
+	item.axis_lock_angular_y = false
+
+	held_item = null
+"
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_v0iea"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_cvnsp"]
+
+[sub_resource type="Animation" id="Animation_f60y1"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.18516165, -0.43947136)]
+}
+
+[sub_resource type="Animation" id="Animation_v0iea"]
+resource_name = "crouch"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, -0.4, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_cvnsp"]
+resource_name = "stand"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.39990044, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_6t5aa"]
+_data = {
+&"RESET": SubResource("Animation_f60y1"),
+&"crouch": SubResource("Animation_v0iea"),
+&"stand": SubResource("Animation_cvnsp")
+}
+
+[sub_resource type="Animation" id="Animation_fkybt"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("device:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.29448953, -1.0164802, -0.3625121)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("device:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_x3wgy"]
+resource_name = "change"
+length = 1.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("device:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.7),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(-0.29448953, -1.0164802, -0.3625121), Vector3(-0.2944896, -0.17586863, -0.3625121)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("device:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_3smsa"]
+_data = {
+&"RESET": SubResource("Animation_fkybt"),
+&"change": SubResource("Animation_x3wgy")
+}
+
+[sub_resource type="GDScript" id="GDScript_v0iea"]
+resource_name = "crosshair"
+script/source = "extends Control
+
+var active = false
+
+func set_active(value):
+	active = value
+	queue_redraw()
+
+func _draw():
+	var center = size / 2
+
+	if active:
+		draw_circle(center, 6, Color.WHITE)
+	else:
+		draw_arc(center, 6, 0, TAU, 32, Color.WHITE, 2)
+
+func toggle_visibility():
+	self.visible = !self.visible
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vgqql"]
+shader = ExtResource("1_v0iea")
+shader_parameter/texture_mode = 1
+shader_parameter/quantize_size = 3
+shader_parameter/snap_to_world = false
+shader_parameter/limit_subpixels = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_x3wgy"]
+shader = ExtResource("5_fkybt")
+shader_parameter/shake_power = 0.03
+shader_parameter/shake_rate = 1.0
+shader_parameter/shake_speed = 5.0
+shader_parameter/shake_block_size = 30.5
+shader_parameter/shake_color_rate = 0.01
+
+[sub_resource type="GDScript" id="GDScript_fkybt"]
+resource_name = "glitch"
+script/source = "extends ColorRect
+
+@onready var control: Control = $\"../../crosshair/Control\"
+
+
+func _ready() -> void:
+	self.visible = false
+
+func change():
+	self.visible = true
+	control.visible = false
+	await get_tree().create_timer(1).timeout
+	self.visible = false
+	control.visible = true
+"
+
+[node name="Player" type="CharacterBody3D" unique_id=350713607]
+collision_layer = 2
+script = SubResource("GDScript_f60y1")
+key_scene = ExtResource("1_6t5aa")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1027199689]
+mesh = SubResource("CapsuleMesh_v0iea")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=238677102]
+shape = SubResource("CapsuleShape3D_cvnsp")
+
+[node name="CameraPivot" type="Node3D" parent="." unique_id=902869531]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.39990044, 0)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CameraPivot" unique_id=1991395095]
+root_node = NodePath("../Camera3D")
+libraries/ = SubResource("AnimationLibrary_6t5aa")
+autoplay = &"stand"
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot" unique_id=658803078]
+transform = Transform3D(1, 0, 2.9802322e-08, 0, 1, 0, -2.9802322e-08, 0, 1, 0, 0.18516165, -0.43947136)
+current = true
+
+[node name="RayCast3D" type="RayCast3D" parent="CameraPivot/Camera3D" unique_id=1050137412]
+transform = Transform3D(1, 0, 0, 0, -4.3711385e-08, -0.99999994, 0, 0.99999994, -4.3711385e-08, 0, 0, 0)
+target_position = Vector3(0, -1.2, 0)
+collision_mask = 9
+
+[node name="HoldPosition" type="Marker3D" parent="CameraPivot/Camera3D" unique_id=173554141]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.041003138, 0, -0.13983363)
+
+[node name="key_view" parent="CameraPivot/Camera3D/HoldPosition" unique_id=1775069439 instance=ExtResource("2_vgqql")]
+transform = Transform3D(8.742275e-09, -0.2, -3.019916e-08, -0.2, -8.742278e-09, 1.7029905e-08, -1.7029906e-08, 3.019916e-08, -0.2, 0.46737573, -0.23832011, -0.3630432)
+visible = false
+
+[node name="device" parent="CameraPivot/Camera3D" unique_id=1420002026 instance=ExtResource("2_6t5aa")]
+transform = Transform3D(0.0258819, 0.09659257, -0.1732051, -0.19318518, 0.05176379, -9.588988e-09, 0.044828758, 0.1673033, 0.09999998, -0.29448953, -1.0164802, -0.3625121)
+visible = false
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CameraPivot/Camera3D" unique_id=1911700935]
+libraries/ = SubResource("AnimationLibrary_3smsa")
+
+[node name="crosshair" type="CanvasLayer" parent="." unique_id=1443072974]
+
+[node name="Control" type="Control" parent="crosshair" unique_id=818014165]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+mouse_behavior_recursive = 1
+script = SubResource("GDScript_v0iea")
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=909402603]
+
+[node name="Texture" type="ColorRect" parent="UI" unique_id=175062974]
+material = SubResource("ShaderMaterial_vgqql")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_behavior_recursive = 1
+
+[node name="Glitch" type="ColorRect" parent="UI" unique_id=620647952]
+visible = false
+material = SubResource("ShaderMaterial_x3wgy")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_behavior_recursive = 1
+script = SubResource("GDScript_fkybt")
+
+[node name="Flash" type="ColorRect" parent="UI" unique_id=922937493]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

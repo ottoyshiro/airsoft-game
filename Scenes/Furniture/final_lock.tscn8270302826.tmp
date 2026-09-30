@@ -1,0 +1,322 @@
+[gd_scene format=3 uid="uid://no1aigrog5xu"]
+
+[ext_resource type="Material" uid="uid://cqij46nfr8ho6" path="res://Assets/Materials/Key/key_body_nt.tres" id="1_dbspq"]
+[ext_resource type="FontFile" uid="uid://c3xmoq3uc514" path="res://Assets/Fonts/PixelifySans-VariableFont_wght.ttf" id="2_tcgmf"]
+[ext_resource type="Texture2D" uid="uid://b0inlupa51shw" path="res://Assets/Images/New Piskel-1.png.png" id="3_ycy55"]
+[ext_resource type="Texture2D" uid="uid://dppx65cgb4j7a" path="res://Assets/Images/New Piskel-1.png (1).png" id="4_tcgmf"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_fqwl6"]
+size = Vector2(0.069, 0.095)
+
+[sub_resource type="TextMesh" id="TextMesh_dbspq"]
+text = "A"
+font = ExtResource("2_tcgmf")
+font_size = 12
+
+[sub_resource type="TextMesh" id="TextMesh_tcgmf"]
+text = "A"
+font = ExtResource("2_tcgmf")
+font_size = 12
+
+[sub_resource type="TextMesh" id="TextMesh_ycy55"]
+text = "A"
+font = ExtResource("2_tcgmf")
+font_size = 12
+
+[sub_resource type="TextMesh" id="TextMesh_km1im"]
+text = "A"
+font = ExtResource("2_tcgmf")
+font_size = 12
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hoo2p"]
+albedo_color = Color(0.59717613, 0.59717613, 0.5971761, 1)
+
+[sub_resource type="GDScript" id="GDScript_dbspq"]
+resource_name = "final_lock_control"
+script/source = "extends Control
+
+@onready var item : PackedScene = preload(\"res://Scenes/Items/key.tscn\")
+
+@onready var letter_spot: MeshInstance3D = $\"../letter_spot\"
+@onready var letter_spot_2: MeshInstance3D = $\"../letter_spot2\"
+@onready var letter_spot_3: MeshInstance3D = $\"../letter_spot3\"
+@onready var letter_spot_4: MeshInstance3D = $\"../letter_spot4\"
+@onready var slide_arrow: TextureButton = $HBoxContainer2/slide_arrow
+@onready var slide_arrow_2: TextureButton = $HBoxContainer2/slide_arrow2
+@onready var slide_arrow_3: TextureButton = $HBoxContainer2/slide_arrow3
+@onready var slide_arrow_4: TextureButton = $HBoxContainer2/slide_arrow4
+@onready var animation_player: AnimationPlayer = $\"../AnimationPlayer\"
+@onready var static_body_3d: StaticBody3D = $\"../StaticBody3D\"
+@onready var item_spot: Node3D = $\"../Node3D2\"
+
+var code = \"CDAE\"
+var alphabet_list : Array = [\"A\", \"B\", \"C\", \"D\", \"E\", \"F\"]
+var answer = \"\"
+var i = 0
+var i_2 = 0
+var i_3 = 0
+var i_4 = 0
+var is_answer_correct : bool = false
+var locked_anim : bool = false
+
+func _ready() -> void:
+	self.visible = false
+	letter_spot.mesh.text = \"X\"
+	letter_spot_2.mesh.text = \"X\"
+	letter_spot_3.mesh.text = \"X\"
+	letter_spot_4.mesh.text = \"X\"
+	answer = letter_spot.mesh.text + letter_spot_2.mesh.text + letter_spot_3.mesh.text + letter_spot_4.mesh.text
+
+func _process(_delta: float) -> void:
+	answer = letter_spot.mesh.text + letter_spot_2.mesh.text + letter_spot_3.mesh.text + letter_spot_4.mesh.text
+	if answer == code:
+		self.visible = false
+		is_answer_correct = true
+		if is_answer_correct and !locked_anim:
+			locked_anim = true
+			animation_player.play(\"open\")
+			await get_tree().create_timer(1).timeout
+			static_body_3d.remove_from_group(\"Interactable\")
+			static_body_3d.get_child(0).disabled = true
+			var key = item.instantiate()
+			item_spot.add_child(key)
+
+func _on_slide_arrow_pressed() -> void:
+	letter_spot.mesh.text = alphabet_list[i]
+	i += 1
+	if i == 6:
+		i = 0
+
+
+func _on_slide_arrow_2_pressed() -> void:
+	letter_spot_2.mesh.text = alphabet_list[i_2]
+	i_2 += 1
+	if i_2 == 6:
+		i_2 = 0
+
+
+func _on_slide_arrow_3_pressed() -> void:
+	letter_spot_3.mesh.text = alphabet_list[i_3]
+	i_3 += 1
+	if i_3 == 6:
+		i_3 = 0
+
+
+func _on_slide_arrow_4_pressed() -> void:
+	letter_spot_4.mesh.text = alphabet_list[i_4]
+	i_4 += 1
+	if i_4 == 6:
+		i_4 = 0
+"
+
+[sub_resource type="Animation" id="Animation_fqwl6"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node3D:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_km1im"]
+resource_name = "open"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node3D:rotation")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(-1.2322024, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_hoo2p"]
+_data = {
+&"RESET": SubResource("Animation_fqwl6"),
+&"open": SubResource("Animation_km1im")
+}
+
+[sub_resource type="GDScript" id="GDScript_ycy55"]
+resource_name = "final_lock"
+script/source = "extends StaticBody3D
+@onready var control: Control = $\"../Control\"
+@onready var camera_3d: Camera3D = $\"../Camera3D\"
+
+func interact(player):
+	player.locked_controls = true
+	camera_3d.current = true
+	if player.held_item != null:
+		player.held_items[player.held_item.item_id].visible = false
+	player.crosshair.visible = false
+	control.visible = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	#Input.set_custom_mouse_cursor(preload(\"res://Assets/Images/cursor.png\"))
+	player.mouse_view = true
+	player.texture.material.set_shader_parameter(
+		\"quantize_size\",
+		 1)
+
+func exit_interact(player):
+	player.locked_controls = false
+	camera_3d.current = false
+	if player.held_item != null:
+		player.held_items[player.held_item.item_id].visible = true
+	player.crosshair.visible = true
+	control.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	Input.set_custom_mouse_cursor(null)
+	player.mouse_view = false
+	player.texture.material.set_shader_parameter(
+		\"quantize_size\",
+		 3)
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ycy55"]
+size = Vector3(0.5965271, 0.50445557, 0.60046387)
+
+[node name="final_lock" type="Node3D" unique_id=1115233800]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=1886675744]
+use_collision = true
+size = Vector3(0.6, 0.3, 0.6)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="CSGBox3D" unique_id=1453911405]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.273653e-05, 0.077502444, 0.005230725)
+operation = 2
+size = Vector3(0.53922117, 0.14499512, 0.53031003)
+
+[node name="Node3D" type="Node3D" parent="." unique_id=408552364]
+transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 0.1570445, -0.30328688)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="Node3D" unique_id=1464974868]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.095483124, 0.30359852)
+size = Vector3(0.6, 0.2, 0.6)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="Node3D/CSGBox3D2" unique_id=1357416122]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0005005002, -0.035664022, 0.001019299)
+operation = 2
+size = Vector3(0.55466306, 0.2, 0.56265867)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=548917992]
+transform = Transform3D(-1, 8.742278e-08, -3.821371e-15, 0, -4.371139e-08, -1, -8.742278e-08, -1, 4.371139e-08, 0.17159274, 0.16355363, -0.31642076)
+mesh = SubResource("PlaneMesh_fqwl6")
+surface_material_override/0 = ExtResource("1_dbspq")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=1121683010]
+transform = Transform3D(-1, 8.742278e-08, -3.821371e-15, 0, -4.371139e-08, -1, -8.742278e-08, -1, 4.371139e-08, -0.16502899, 0.16355363, -0.31642076)
+mesh = SubResource("PlaneMesh_fqwl6")
+surface_material_override/0 = ExtResource("1_dbspq")
+
+[node name="letter_spot" type="MeshInstance3D" parent="." unique_id=1163853144]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15040828, 0.042959824, 0.28571224)
+mesh = SubResource("TextMesh_dbspq")
+
+[node name="letter_spot2" type="MeshInstance3D" parent="." unique_id=1484651069]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.045989573, 0.042959824, 0.28571224)
+mesh = SubResource("TextMesh_tcgmf")
+
+[node name="letter_spot3" type="MeshInstance3D" parent="." unique_id=639849193]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.054808013, 0.042959824, 0.28571224)
+mesh = SubResource("TextMesh_ycy55")
+
+[node name="letter_spot4" type="MeshInstance3D" parent="." unique_id=955734642]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16328762, 0.042959824, 0.28571224)
+mesh = SubResource("TextMesh_km1im")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="." unique_id=1611204940]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00051268935, 0.043761913, 0.296781)
+size = Vector3(0.4043457, 0.105371095, 0.026367188)
+material = SubResource("StandardMaterial3D_hoo2p")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="CSGBox3D3" unique_id=908639316]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.10244765, 0, 0.022246778)
+operation = 2
+size = Vector3(0.019140631, 0.2, 0.026367188)
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="CSGBox3D3" unique_id=1205822070]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0015872046, 0, 0.022246778)
+operation = 2
+size = Vector3(0.019140631, 0.2, 0.026367188)
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="CSGBox3D3" unique_id=771050137]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.100999795, 0, 0.022246778)
+operation = 2
+size = Vector3(0.019140631, 0.2, 0.026367188)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1862617438]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.101501524, 0.6881618)
+
+[node name="Control" type="Control" parent="." unique_id=380649382]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_dbspq")
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Control" unique_id=550999069]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 250.0
+offset_top = 199.0
+offset_right = 774.0
+offset_bottom = 327.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = 3.1415927
+scale = Vector2(0.8, 0.8)
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="slide_arrow4" type="TextureButton" parent="Control/HBoxContainer2" unique_id=1632517383]
+layout_mode = 2
+texture_normal = ExtResource("3_ycy55")
+texture_hover = ExtResource("4_tcgmf")
+
+[node name="slide_arrow3" type="TextureButton" parent="Control/HBoxContainer2" unique_id=638629989]
+layout_mode = 2
+texture_normal = ExtResource("3_ycy55")
+texture_hover = ExtResource("4_tcgmf")
+
+[node name="slide_arrow2" type="TextureButton" parent="Control/HBoxContainer2" unique_id=631577274]
+layout_mode = 2
+texture_normal = ExtResource("3_ycy55")
+texture_hover = ExtResource("4_tcgmf")
+
+[node name="slide_arrow" type="TextureButton" parent="Control/HBoxContainer2" unique_id=1052613593]
+layout_mode = 2
+texture_normal = ExtResource("3_ycy55")
+texture_hover = ExtResource("4_tcgmf")
+
+[node name="Node3D2" type="Node3D" parent="." unique_id=1846295388]
+transform = Transform3D(0.13058104, 0, -0.15148793, 0, 0.2, 0, 0.15148793, 0, 0.13058104, 0, 0.04269807, 0)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=64371340]
+libraries/ = SubResource("AnimationLibrary_hoo2p")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1853466063 groups=["Interactable"]]
+collision_layer = 8
+script = SubResource("GDScript_ycy55")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1774811057]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0011444092, 0.10140991, 0.0006713867)
+shape = SubResource("BoxShape3D_ycy55")
+
+[connection signal="pressed" from="Control/HBoxContainer2/slide_arrow4" to="Control" method="_on_slide_arrow_4_pressed"]
+[connection signal="pressed" from="Control/HBoxContainer2/slide_arrow3" to="Control" method="_on_slide_arrow_3_pressed"]
+[connection signal="pressed" from="Control/HBoxContainer2/slide_arrow2" to="Control" method="_on_slide_arrow_2_pressed"]
+[connection signal="pressed" from="Control/HBoxContainer2/slide_arrow" to="Control" method="_on_slide_arrow_pressed"]

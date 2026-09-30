@@ -1,0 +1,233 @@
+[gd_scene format=3 uid="uid://c1qtufta61csf"]
+
+[ext_resource type="Script" uid="uid://q7poo88yc05a" path="res://Scripts/gun.gd" id="1_hn68x"]
+[ext_resource type="PackedScene" uid="uid://dsugy4kvk5tnu" path="res://airsoft_bullet.tscn" id="2_5bb75"]
+[ext_resource type="Material" uid="uid://bv712mopsvqcw" path="res://Scenes/Furniture/Door.tres" id="3_7oeqp"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_a8mn3"]
+size = Vector3(0.5822792, 0.18536225, 0.102825925)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_gda1h"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.93217725
+radial_segments = 7
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qvfgu"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_c2moy"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.83012646
+radial_segments = 7
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6cxpq"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_uokoq"]
+top_radius = 0.09
+bottom_radius = 0.09
+height = 0.47469458
+radial_segments = 7
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dcio6"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_q3s4e"]
+top_radius = 0.03
+bottom_radius = 0.03
+height = 0.1704585
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iy6yh"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_1o1ri"]
+size = Vector3(0.9645569, 0.16547851, 0.09594116)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2vmvs"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+roughness = 0.47272727
+
+[sub_resource type="BoxMesh" id="BoxMesh_n2us2"]
+size = Vector3(0.2940155, 0.118823245, 0.09494629)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_s78sc"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+roughness = 0.47272727
+
+[sub_resource type="BoxMesh" id="BoxMesh_7oeqp"]
+size = Vector3(0.19240037, 0.118823245, 0.09494629)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a8mn3"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+roughness = 0.47272727
+
+[sub_resource type="BoxMesh" id="BoxMesh_ay5ys"]
+size = Vector3(0.5737656, 0.1121643, 0.09696569)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p4u3q"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+roughness = 0.47272727
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_5lktp"]
+top_radius = 0.056
+bottom_radius = 0.056
+height = 0.06748047
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w8sto"]
+albedo_color = Color(0.79587686, 0.31138888, 0.025873745, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_qiu0j"]
+size = Vector3(0.039746094, 0.06386109, 0.11873169)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gda1h"]
+size = Vector3(0.01694336, 0.06386109, 0.15668717)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c2moy"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+roughness = 0.47272727
+
+[sub_resource type="BoxMesh" id="BoxMesh_86ymi"]
+size = Vector3(0.039746094, 0.043527223, 0.13594551)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_m2u14"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+roughness = 0.47272727
+
+[sub_resource type="BoxMesh" id="BoxMesh_6cxpq"]
+size = Vector3(0.039746094, 0.043527223, 0.04524727)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uokoq"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+roughness = 0.47272727
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bhunq"]
+size = Vector3(2.306549, 0.3530426, 0.1262207)
+
+[node name="shotgun" type="Node3D" unique_id=477308252 groups=["weapon"]]
+script = ExtResource("1_hn68x")
+bullet_ref = ExtResource("2_5bb75")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=202460387]
+transform = Transform3D(0.99999994, 0, 0, 0, 0.99999994, 0, 0, 0, 1, -0.7616036, 0.4169197, -0.44920963)
+mesh = SubResource("BoxMesh_a8mn3")
+surface_material_override/0 = ExtResource("3_7oeqp")
+
+[node name="MeshInstance3D6" type="MeshInstance3D" parent="." unique_id=1547227699]
+transform = Transform3D(-4.371138e-08, 0.9999999, 0, -0.9999999, -4.371138e-08, 0, 0, 0, 1, -0.029057771, 0.46061435, -0.45000002)
+mesh = SubResource("CylinderMesh_gda1h")
+surface_material_override/0 = SubResource("StandardMaterial3D_qvfgu")
+
+[node name="MeshInstance3D11" type="MeshInstance3D" parent="." unique_id=1570954516]
+transform = Transform3D(-4.371138e-08, 0.9999999, 0, -0.9999999, -4.371138e-08, 0, 0, 0, 1, -0.08008316, 0.37109235, -0.45000002)
+mesh = SubResource("CylinderMesh_c2moy")
+surface_material_override/0 = SubResource("StandardMaterial3D_6cxpq")
+
+[node name="MeshInstance3D12" type="MeshInstance3D" parent="." unique_id=869991672]
+transform = Transform3D(-4.371138e-08, 0.9999999, 0, -0.9999999, -4.371138e-08, 0, 0, 0, 1, 0.02686422, 0.37109235, -0.45000002)
+mesh = SubResource("CylinderMesh_uokoq")
+surface_material_override/0 = SubResource("StandardMaterial3D_dcio6")
+
+[node name="MeshInstance3D7" type="MeshInstance3D" parent="." unique_id=528217976]
+transform = Transform3D(-4.371138e-08, 0.9999999, 0, -0.9999999, -4.371138e-08, 0, 0, 0, 1, 0.2739884, 0.37821177, -0.45000002)
+mesh = SubResource("CylinderMesh_q3s4e")
+surface_material_override/0 = SubResource("StandardMaterial3D_iy6yh")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="." unique_id=1946188156]
+transform = Transform3D(0.999726, -0.02340865, 0, 0.02340865, 0.999726, 0, 0, 0, 1, -1.3164827, 0.3917696, -0.449881)
+mesh = SubResource("BoxMesh_1o1ri")
+surface_material_override/0 = SubResource("StandardMaterial3D_2vmvs")
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="." unique_id=1005798287]
+transform = Transform3D(0.8164209, -0.57745737, 0, 0.57745737, 0.8164209, 0, 0, 0, 1, -1.5526944, 0.32378098, -0.45037842)
+mesh = SubResource("BoxMesh_n2us2")
+surface_material_override/0 = SubResource("StandardMaterial3D_s78sc")
+
+[node name="MeshInstance3D10" type="MeshInstance3D" parent="." unique_id=1980495209]
+transform = Transform3D(0.8464074, 0.53253585, 0, -0.53253585, 0.8464074, 0, 0, 0, 1, -1.687584, 0.30198267, -0.45037842)
+mesh = SubResource("BoxMesh_7oeqp")
+surface_material_override/0 = SubResource("StandardMaterial3D_a8mn3")
+
+[node name="MeshInstance3D8" type="MeshInstance3D" parent="." unique_id=63397372]
+transform = Transform3D(0.9873314, 0.15867165, 0, -0.15867165, 0.9873314, 0, 0, 0, 1, -1.5108317, 0.46051833, -0.44936872)
+mesh = SubResource("BoxMesh_ay5ys")
+surface_material_override/0 = SubResource("StandardMaterial3D_p4u3q")
+
+[node name="muzzle" type="MeshInstance3D" parent="." unique_id=932272964]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 0.41219932, 0.459545, -0.4492716)
+mesh = SubResource("CylinderMesh_5lktp")
+surface_material_override/0 = SubResource("StandardMaterial3D_w8sto")
+
+[node name="MeshInstance3D9" type="MeshInstance3D" parent="." unique_id=67382208]
+transform = Transform3D(0.90127826, -4.315258e-09, -0.4332402, 0.4332402, -6.848525e-08, 0.90127826, -3.3559797e-08, -1.0000001, -5.985471e-08, -1.1402538, 0.31127015, -0.44932702)
+mesh = SubResource("BoxMesh_qiu0j")
+surface_material_override/0 = ExtResource("3_7oeqp")
+
+[node name="MeshInstance3D16" type="MeshInstance3D" parent="." unique_id=753717163]
+transform = Transform3D(0.82610375, 6.0053007e-09, -0.5635179, 0.5635179, -6.835779e-08, 0.82610375, -3.3559797e-08, -1.0000001, -5.985471e-08, -1.2316537, 0.28529942, -0.44932702)
+mesh = SubResource("BoxMesh_gda1h")
+surface_material_override/0 = SubResource("StandardMaterial3D_c2moy")
+
+[node name="MeshInstance3D17" type="MeshInstance3D" parent="." unique_id=602573270]
+transform = Transform3D(-9.3609095e-05, 5.9857875e-08, -0.9999999, 0.9999999, -3.3554237e-08, -9.3609095e-05, -3.3559797e-08, -1, -5.9854706e-08, -1.1129543, 0.22778258, -0.44932702)
+mesh = SubResource("BoxMesh_gda1h")
+surface_material_override/0 = SubResource("StandardMaterial3D_c2moy")
+
+[node name="MeshInstance3D18" type="MeshInstance3D" parent="." unique_id=695117123]
+transform = Transform3D(-0.99991333, 3.2769506e-08, 0.013155629, -0.013155629, 6.029105e-08, -0.99991333, -3.3559797e-08, -1, -5.9854706e-08, -1.041577, 0.2993549, -0.44932702)
+mesh = SubResource("BoxMesh_gda1h")
+surface_material_override/0 = SubResource("StandardMaterial3D_c2moy")
+
+[node name="MeshInstance3D13" type="MeshInstance3D" parent="." unique_id=1026944488]
+transform = Transform3D(-0.06721474, 6.19751e-08, -0.99773854, 0.99773854, -2.9460807e-08, -0.06721474, -3.35598e-08, -1.0000001, -5.985472e-08, 0.30216953, 0.50688314, -0.44550288)
+mesh = SubResource("BoxMesh_86ymi")
+surface_material_override/0 = SubResource("StandardMaterial3D_m2u14")
+
+[node name="MeshInstance3D14" type="MeshInstance3D" parent="." unique_id=1069734993]
+transform = Transform3D(0.9889045, -2.429595e-08, -0.14855145, 0.14855145, -6.4176e-08, 0.9889045, -3.35598e-08, -1.0000001, -5.985471e-08, 0.34119228, 0.5272842, -0.44550288)
+mesh = SubResource("BoxMesh_6cxpq")
+surface_material_override/0 = SubResource("StandardMaterial3D_uokoq")
+
+[node name="muzzle_ref" type="Marker3D" parent="." unique_id=1711440051]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0.7429109, 0.4658988, -0.44423345)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1126782001 groups=["weapon"]]
+collision_layer = 8
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=338728735]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6684418, 0.37325287, -0.45202637)
+shape = SubResource("BoxShape3D_bhunq")

@@ -1,0 +1,96 @@
+[gd_scene format=3 uid="uid://c1ba75oas4asf"]
+
+[sub_resource type="GDScript" id="GDScript_xp12r"]
+resource_name = "enemy"
+script/source = "extends CharacterBody3D
+
+@export var speed: float = 4.0
+var player: Node3D = null
+@export var hp_points = 5
+var is_active = false
+
+# 1. Nova variável para impedir que múltiplos projéteis matem o mesmo inimigo
+var is_dead: bool = false
+
+func _ready() -> void:
+	# Encontra o player na cena pelo grupo ou nome (ajuste conforme seu projeto)
+	player = get_tree().get_first_node_in_group(\"player\")
+
+func _physics_process(delta: float) -> void:
+	if not is_active:
+		return
+	if not player:
+		return
+	# Calcula a direção até o player no plano X/Z
+	var direction = (player.global_position - global_position).normalized()
+	direction.y = 0 # Mantém o movimento apenas no chão
+	
+	# Move o inimigo na direção do player
+	velocity.x = direction.x * speed
+	velocity.z = direction.z * speed
+	
+	# Faz o inimigo olhar para o player
+	if direction != Vector3.ZERO:
+		look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
+	
+	move_and_slide()
+
+
+func take_damage(amount: int) -> void:
+	# 2. Se o inimigo já começou a morrer neste frame, ignora os outros projéteis da 12
+	if is_dead:
+		return
+
+	hp_points -= amount
+	print(\"Inimigo tomou tiro! HP restante: \", hp_points)
+	
+	if hp_points <= 0:
+		# 3. Ativa a trava imediatamente para bloquear acessos simultâneos
+		is_dead = true
+		
+		print(\"you killed\")
+		
+		# 4. Atualiza o contador de mortes e a interface de forma segura
+		GameManager.enemies_defeated += 1
+		if player and \"label_enemies\" in player and player.label_enemies:
+			player.label_enemies.text = \"Enemies: \" + str(GameManager.enemies_defeated) + \" / \" + str(GameManager.total_enemies)
+		
+		# 5. Remove o inimigo usando call_deferred para não quebrar a física do Godot
+		queue_free.call_deferred()
+		
+		# 6. Checa o fim de jogo
+		if GameManager.enemies_defeated == 7:
+			self.get_tree().change_scene_to_packed(preload(\"res://game_over.tscn\"))
+
+
+func _on_area_3d_body_entered(body: Node3D) -> void:
+	# Correção extra: Garante que o corpo ainda é válido na memória antes de checar o grupo
+	if not is_instance_valid(body):
+		return
+		
+	if body.is_in_group(\"player\"):
+		self.get_tree().change_scene_to_packed(preload(\"res://game_over.tscn\"))
+"
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_bhunq"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_bhunq"]
+radius = 0.6225586
+height = 2.1293945
+
+[node name="enemy" type="CharacterBody3D" unique_id=1894574927 groups=["enemy"]]
+script = SubResource("GDScript_xp12r")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2009279069]
+mesh = SubResource("CapsuleMesh_bhunq")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1403621784]
+shape = SubResource("CapsuleShape3D_bhunq")
+
+[node name="Area3D" type="Area3D" parent="." unique_id=853308976]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" unique_id=981509907]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.064697266, 0)
+shape = SubResource("CapsuleShape3D_bhunq")
+
+[connection signal="body_entered" from="Area3D" to="." method="_on_area_3d_body_entered"]

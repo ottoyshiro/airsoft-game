@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://clvcoocr5id0p"]
+
+[ext_resource type="Material" uid="uid://csyd6jt4rljm7" path="res://Assets/Materials/Cube/cube.tres" id="1_axc12"]
+
+[sub_resource type="GDScript" id="GDScript_axc12"]
+resource_name = "cube_view"
+script/source = "extends Node3D
+
+@export_enum(\"none\", \"past\", \"present\") var forced_texture : int
+@onready var present_material : Array = [preload(\"res://Assets/Materials/Cube/cube.tres\")]
+@onready var past_material : Array = [preload(\"res://Assets/Materials/Cube/cube_nt.tres\")]
+
+@onready var mesh_instance_3d: MeshInstance3D = $MeshInstance3D
+
+func _ready() -> void:
+	if forced_texture == 0:
+		if GameManager.is_on_past:
+			mesh_instance_3d.set_surface_override_material(0, past_material[0])
+		else:
+			mesh_instance_3d.set_surface_override_material(0, present_material[0])
+
+func change_material():
+	if forced_texture == 0:
+		if GameManager.is_on_past:
+			mesh_instance_3d.set_surface_override_material(0, past_material[0])
+		else:
+			mesh_instance_3d.set_surface_override_material(0, present_material[0])
+	if forced_texture == 1:
+		mesh_instance_3d.set_surface_override_material(0, past_material[0])
+	elif forced_texture == 2:
+		mesh_instance_3d.set_surface_override_material(0, present_material[0])
+func _process(_delta: float) -> void:
+	change_material()
+"
+
+[sub_resource type="BoxMesh" id="BoxMesh_1l1uf"]
+size = Vector3(0.2, 0.2, 0.2)
+
+[node name="CubeView" type="Node3D" unique_id=43290667]
+script = SubResource("GDScript_axc12")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1100520398]
+mesh = SubResource("BoxMesh_1l1uf")
+surface_material_override/0 = ExtResource("1_axc12")

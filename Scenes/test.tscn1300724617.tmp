@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://dfjv2swvupvjc"]
+
+[ext_resource type="PackedScene" uid="uid://c225oea00bq2l" path="res://Scenes/player.tscn" id="1_lc1oi"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_o3qbn"]
+size = Vector2(8, 8)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_lc1oi"]
+points = PackedVector3Array(-4, 0, -4, -4, 0, 4, 4, 0, -4, 4, 0, 4)
+
+[node name="Test" type="Node3D" unique_id=1253878177]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1663539432]
+mesh = SubResource("PlaneMesh_o3qbn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D" unique_id=66965118]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D" unique_id=289392733]
+shape = SubResource("ConvexPolygonShape3D_lc1oi")
+
+[node name="Player" parent="." unique_id=350713607 instance=ExtResource("1_lc1oi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3705649, 0)

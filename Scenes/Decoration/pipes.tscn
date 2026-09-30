@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://d2q805pauqpe8"]
+
+[ext_resource type="PackedScene" uid="uid://dpgxq1rotof1s" path="res://Scenes/Decoration/joelho.tscn" id="1_7ktcp"]
+[ext_resource type="PackedScene" uid="uid://g12o314twogt" path="res://Scenes/Decoration/pipe.tscn" id="2_ws3sl"]
+
+[node name="pipes" type="Node3D" unique_id=1553776924]
+
+[node name="Vert_007" parent="." unique_id=1735984048 instance=ExtResource("1_7ktcp")]
+
+[node name="Vert_009" parent="." unique_id=1587899469 instance=ExtResource("2_ws3sl")]

@@ -1,0 +1,118 @@
+[gd_scene format=3 uid="uid://b0vwmap2phgp"]
+
+[sub_resource type="GDScript" id="GDScript_u7oeq"]
+resource_name = "light"
+script/source = "extends Node3D
+
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
+
+func _ready() -> void:
+	if !GameManager.is_on_past:
+		run_light_loop()
+
+
+
+func run_light_loop():
+	while true:
+		await get_tree().create_timer(1.0).timeout
+		animation_player.play(\"change_era\")
+		await get_tree().create_timer(4.0).timeout
+"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u7oeq"]
+albedo_color = Color(0.93333334, 0.91764706, 0.80784315, 1)
+emission_enabled = true
+emission = Color(0.99999994, 0.90269035, 0.61963236, 1)
+emission_energy_multiplier = 3.69
+
+[sub_resource type="Animation" id="Animation_u7oeq"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CSGCylinder3D2:material:emission_energy_multiplier")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [3.69]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("OmniLight3D:light_energy")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [3.421]
+}
+
+[sub_resource type="Animation" id="Animation_bok5u"]
+resource_name = "change_era"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CSGCylinder3D2:material:emission_energy_multiplier")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0083333105, 0.13333334, 0.24166666, 0.33333337, 0.44, 0.56666666, 0.67333335, 0.8, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [3.69, 2.19, 3.69, 2.19, 3.69, 2.19, 3.69, 2.19, 3.69]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("OmniLight3D:light_energy")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.13333334, 0.23333333, 0.33333334, 0.43333334, 0.56666666, 0.6666667, 0.8, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [7.234, 3.421, 7.234, 3.421, 7.234, 3.421, 7.234, 3.421, 7.234]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_f5fwr"]
+_data = {
+&"RESET": SubResource("Animation_u7oeq"),
+&"change_era": SubResource("Animation_bok5u")
+}
+
+[node name="Light" type="Node3D" unique_id=2034301214]
+script = SubResource("GDScript_u7oeq")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=1839780426]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.40000004, 0, 0)
+size = Vector3(0.6, 0.3, 2.3)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="CSGBox3D" unique_id=1308913963]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00151366, -0.052152634, 0.0043702126)
+operation = 2
+size = Vector3(0.5479492, 0.3, 2.2383301)
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="." unique_id=608253227]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0.26602346, 0, 0)
+radius = 0.085
+material = SubResource("StandardMaterial3D_u7oeq")
+
+[node name="CSGCylinder3D2" type="CSGCylinder3D" parent="." unique_id=1318264814]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0.50352967, 0, 0)
+radius = 0.085
+material = SubResource("StandardMaterial3D_u7oeq")
+
+[node name="OmniLight3D" type="SpotLight3D" parent="." unique_id=1457911726]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0.3883528, 0, -0.002727151)
+light_color = Color(1, 1, 0.6392157, 1)
+light_energy = 3.421
+shadow_enabled = true
+spot_attenuation = 1.72
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=2056201712]
+libraries/ = SubResource("AnimationLibrary_f5fwr")

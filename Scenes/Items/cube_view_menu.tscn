@@ -1,0 +1,62 @@
+[gd_scene format=3 uid="uid://bxfgdxcuoidbq"]
+
+[ext_resource type="Material" uid="uid://csyd6jt4rljm7" path="res://Assets/Materials/Cube/cube.tres" id="1_527bd"]
+
+[sub_resource type="GDScript" id="GDScript_2r3bh"]
+resource_name = "cube_view_menu"
+script/source = "extends Node3D
+
+var start_pos: Vector3
+var time := 0.0
+
+@export_enum(\"none\", \"past\", \"present\") var forced_texture : int
+@onready var present_material : Array = [preload(\"res://Assets/Materials/Cube/cube.tres\")]
+@onready var past_material : Array = [preload(\"res://Assets/Materials/Cube/cube_nt.tres\")]
+
+@onready var mesh_instance_3d: MeshInstance3D = $MeshInstance3D
+
+func _ready() -> void:
+	start_pos = global_position
+	if forced_texture == 0:
+		if GameManager.is_on_past:
+			mesh_instance_3d.set_surface_override_material(0, past_material[0])
+		else:
+			mesh_instance_3d.set_surface_override_material(0, present_material[0])
+
+func change_material():
+	if forced_texture == 0:
+		if GameManager.is_on_past:
+			mesh_instance_3d.set_surface_override_material(0, past_material[0])
+		else:
+			mesh_instance_3d.set_surface_override_material(0, present_material[0])
+	if forced_texture == 1:
+		mesh_instance_3d.set_surface_override_material(0, past_material[0])
+	elif forced_texture == 2:
+		mesh_instance_3d.set_surface_override_material(0, present_material[0])
+
+func _process(delta: float) -> void:
+	change_material()
+	time += delta
+
+	# Movimento vertical
+	global_position = start_pos + Vector3(
+		0,
+		sin(time * 0.5) * 0.1,
+		0
+	)
+
+	# Rotação contínua
+	rotation.x = sin(time * 0.3) * 0.2
+	rotation.y += delta * 0.2
+	rotation.z = cos(time * 0.2) * 0.15
+"
+
+[sub_resource type="BoxMesh" id="BoxMesh_ijkdq"]
+size = Vector3(0.2, 0.2, 0.2)
+
+[node name="cube_view_menu" type="Node3D" unique_id=643471714]
+script = SubResource("GDScript_2r3bh")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=993113405]
+mesh = SubResource("BoxMesh_ijkdq")
+surface_material_override/0 = ExtResource("1_527bd")

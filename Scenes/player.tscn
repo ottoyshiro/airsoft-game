@@ -1,0 +1,1277 @@
+[gd_scene format=3 uid="uid://c225oea00bq2l"]
+
+[ext_resource type="PackedScene" uid="uid://c66ioytj6hjyp" path="res://Scenes/Items/key_root.tscn" id="1_6t5aa"]
+[ext_resource type="Shader" uid="uid://bom2l3uppib8w" path="res://Scripts/player.gdshader" id="1_v0iea"]
+[ext_resource type="PackedScene" uid="uid://7w5lhwyw0e4s" path="res://Scenes/Items/key_view.tscn" id="2_vgqql"]
+[ext_resource type="PackedScene" uid="uid://ip43u313r6bh" path="res://Scenes/Items/fuse_view.tscn" id="3_3smsa"]
+[ext_resource type="PackedScene" uid="uid://brtovqu6ds5pt" path="res://Scenes/Items/device_view.tscn" id="3_x3wgy"]
+[ext_resource type="PackedScene" uid="uid://clvcoocr5id0p" path="res://Scenes/Items/cube_view.tscn" id="4_8erm5"]
+[ext_resource type="PackedScene" uid="uid://deqv78c2xrh7a" path="res://Scenes/Items/cabinet_key_view.tscn" id="5_f1ek2"]
+[ext_resource type="Shader" uid="uid://cftbecr5ebr5l" path="res://Assets/Shaders/player-glitch.gdshader" id="5_fkybt"]
+[ext_resource type="PackedScene" uid="uid://c1dkasepy4jo" path="res://gun_view.tscn" id="7_ukyrk"]
+[ext_resource type="PackedScene" uid="uid://cw4bpc76dgj33" path="res://shotgun_view.tscn" id="8_7dp3o"]
+[ext_resource type="FontFile" uid="uid://c3xmoq3uc514" path="res://Assets/Fonts/PixelifySans-VariableFont_wght.ttf" id="8_8erm5"]
+[ext_resource type="PackedScene" uid="uid://dwknp0hecv6ka" path="res://pistoll_1911_view.tscn" id="9_fd4e3"]
+[ext_resource type="PackedScene" uid="uid://bsawb7yg7l4ob" path="res://rifle_view.tscn" id="9_h4iuc"]
+[ext_resource type="AudioStream" uid="uid://d374kdtgb6mad" path="res://Assets/Sounds/563465__nicholasdaryl__itempickup.wav" id="10_tx1dd"]
+[ext_resource type="AudioStream" uid="uid://cc0a3g6s565tp" path="res://Assets/Sounds/mixkit-typing-on-an-electronic-device.wav" id="11_gymyn"]
+
+[sub_resource type="GDScript" id="GDScript_f60y1"]
+resource_name = "player"
+script/source = "extends CharacterBody3D
+
+
+@export var SPEED = 5.0
+@export var camera_sensibility : float = 0.005
+@export var key_scene : PackedScene
+
+@onready var camera_pivot : Node3D = $CameraPivot
+@onready var camera : Camera3D = $CameraPivot/Camera3D
+#@onready var camera_anim_player = $camera_animation
+@onready var ray = $CameraPivot/Camera3D/RayCast3D
+@onready var crosshair = $crosshair/Control
+@onready var hold_position: Marker3D = $CameraPivot/Camera3D/HoldPosition
+#@onready var key: RigidBody3D = $CameraPivot/Camera3D/HoldPosition/key
+@onready var glitch: ColorRect = $UI/Glitch
+@onready var animation_device: AnimationPlayer = $CameraPivot/Camera3D/AnimationPlayer
+@onready var flash: ColorRect = $UI/Flash
+@onready var device: Node3D = $CameraPivot/Camera3D/device_view
+@onready var item_view_manager: Node3D = $CameraPivot/Camera3D/HoldPosition/item_view_manager
+@onready var texture: ColorRect = $UI/Texture
+@onready var feedback: RichTextLabel = $UI/RichTextLabel
+@onready var final_screen: CanvasLayer = $FinalScreen
+@onready var audio_stream_player_3d: AudioStreamPlayer3D = $AudioStreamPlayer3D
+#@onready var arma = $CameraPivot/Camera3D/HoldPosition/item_view_manager/gun
+@onready var label_controls: Label = $UI/Control/controls/Label
+@onready var label_enemies: Label = $UI/Control/enemies/Label
+
+@onready var botoes_carregadores = [
+	$UI/Control/HBoxContainer/Button,
+	$UI/Control/HBoxContainer/Button2,
+	$UI/Control/HBoxContainer/Button3,
+	$UI/Control/HBoxContainer/Button4
+]
+@onready var label: Label = $UI/Control/VBoxContainer/Label
+@onready var progress_bar: Label = $UI/Control/VBoxContainer/ProgressBar
+
+@onready var armas_view: Array[Node3D] = [
+	$CameraPivot/Camera3D/HoldPosition/item_view_manager/gun_view,
+	$CameraPivot/Camera3D/HoldPosition/item_view_manager/rifle_view,
+	$CameraPivot/Camera3D/HoldPosition/item_view_manager/shotgun_view,
+	$CameraPivot/Camera3D/HoldPosition/item_view_manager/pistoll_1911_view]
+var arma_atual: Weapon
+var shoot : bool = true
+
+const JUMP_VELOCITY = 4.5
+var is_crouching := false
+var is_running := false
+var mouse_input := Vector2.ZERO
+var held_items = {}
+var held_item = null
+var current_item : RigidBody3D
+var camera_pitch := 0.0
+var locked_controls = false
+var mouse_view : bool = false
+var obj = null
+var ui_open
+var inventario_carregadores: Array = []
+
+
+func check_interaction():
+	if ray.is_colliding():
+		obj = ray.get_collider()
+
+		if obj is RigidBody3D and Input.is_action_just_pressed(\"left_click\"):
+			if obj.item_id == \"cube\" and !GameManager.has_gloves and GameManager.is_on_past:
+				feedback.exibir_texto_digitado(\"I need a pair of gloves\")
+				print(\"preciso de luvas\")
+				return
+			pick_item(obj)
+
+	if Input.is_action_just_pressed(\"right_click\"):
+		drop_item()
+
+func _ready():
+	label_controls.text = \"1, 2, 3 - select items
+						R - reload
+						F - change mode SEMI/AUTO
+						E - interact
+						LMB - shoot
+						SCROLL - hop up\"
+	label_enemies.text = \"Enemies: \" + str(GameManager.enemies_defeated) + \" / \" + str(GameManager.total_enemies)
+	#for arma in armas:
+		#arma.visible = false
+		#arma.ativa = false
+#
+		#if arma is Node3D and arma.get_script() != null:
+			#if \"player\" in arma:
+				#arma.player = self
+#
+	#if armas.size() > 0:
+		#arma_atual = armas[indice_arma_atual]
+		#arma_atual.visible = false
+		#arma_atual.ativa = true
+	arma_atual = $\"../gun\"
+	arma_atual.player = self
+	arma_atual.disable_collision()
+	
+	atualizar_visual_arma()
+	atualizar_ui_inventario()
+	#if arma_atual != null:
+	label.text = WeaponTypes.nome_tipo(arma_atual.tipo_carregador)
+	progress_bar.text = str(arma_atual.municao_atual) + \"/\" + str(arma_atual.municao_atual)
+	arma_atual.player = self
+	camera_pivot.get_child(0).play(\"stand\")
+	held_items = {
+		\"cabinet_key\": $CameraPivot/Camera3D/HoldPosition/item_view_manager/cabinet_key_view,
+		\"key\": $CameraPivot/Camera3D/HoldPosition/item_view_manager/key_view,
+		\"fuse\": $CameraPivot/Camera3D/HoldPosition/item_view_manager/fuse_view,
+		\"cube\": $CameraPivot/Camera3D/HoldPosition/item_view_manager/cube_view
+	}
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	Input.use_accumulated_input = false
+
+func _input(event):
+	if !mouse_view:
+		if event is InputEventMouseMotion:
+			mouse_input += event.relative
+		# recaptura mouse
+		if event is InputEventMouseButton:
+			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+
+				if Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
+
+					Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+					mouse_input = Vector2.ZERO
+					
+					if held_item != null:
+						held_items[held_item.item_id].visible = false
+						await get_tree().process_frame
+						held_items[held_item.item_id].visible = true
+
+func _process(_delta):
+	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		# rotação horizontal
+		camera_pivot.rotate_y(
+			-mouse_input.x * camera_sensibility
+		)
+		# acumula pitch
+		camera_pitch += -mouse_input.y * camera_sensibility
+		# limita pitch
+		camera_pitch = clamp(
+			camera_pitch,
+			deg_to_rad(-80),
+			deg_to_rad(80)
+		)
+		# aplica pitch
+		camera.rotation.x = camera_pitch
+
+		mouse_input = Vector2.ZERO
+
+func _unhandled_input(event: InputEvent) -> void:
+	
+	if event.is_action_pressed(\"select_magazine_1\"):
+		selecionar_carregador(0)
+
+	elif event.is_action_pressed(\"select_magazine_2\"):
+		selecionar_carregador(1)
+
+	elif event.is_action_pressed(\"select_magazine_3\"):
+		selecionar_carregador(2)
+
+	elif event.is_action_pressed(\"select_magazine_4\"):
+		selecionar_carregador(3)
+	if !shoot:
+		print(\"you cant shoot here\")
+		return
+	if event.is_action_pressed(\"left_click\"):
+		arma_atual.gatilho_pressionado = true
+
+		if arma_atual.modo_disparo == arma_atual.ModoDisparo.SEMI:
+			arma_atual.disparar_se_possivel()
+			
+	elif event.is_action_released(\"left_click\"):
+		arma_atual.gatilho_pressionado = false
+			
+	if event.is_action_pressed(\"reload\"):
+		arma_atual.recarregar()
+
+	if !locked_controls:
+		if event.is_action_pressed(\"run\"):
+			if not is_crouching:
+				SPEED = 8.5
+			is_running = true
+		elif event.is_action_released(\"run\"):
+			if not is_crouching:
+				SPEED = 5.0
+			is_running = false
+		if event.is_action_pressed(\"crouch\"):
+			is_crouching = true
+			SPEED = 5.0
+			#$standing_colision.disabled=true
+			#$crouched_collision.disabled=false
+			camera_pivot.get_child(0).play(\"crouch\")
+		elif event.is_action_released(\"crouch\"):
+			is_crouching = false
+			#$standing_colision.disabled=false
+			#$crouched_collision.disabled=true
+			camera_pivot.get_child(0).play(\"stand\")
+			if Input.is_action_pressed(\"run\"):
+				SPEED = 8.5
+				is_running = true
+			else:
+				SPEED = 5.0
+				is_running = false
+		if GameManager.has_prototype:
+			if event.is_action_pressed(\"change\") and GameManager.has_cube and !GameManager.has_gloves:
+				feedback.exibir_texto_digitado(\"I can't return to past with cube in hands, will burn them!\")
+				print(\"nao pode retornar ao passado com o cubo na mao, vai lhe queimar!\")
+				return
+			if event.is_action_pressed(\"change\"):
+				animation_device.play(\"change\")
+				if device.has_method(\"change_device\"):
+					device.change_device()
+				if glitch.has_method(\"change\"):
+					locked_controls = true
+					await glitch.change()
+					flash.visible = true
+					var level = self.get_parent()
+					if level.has_method(\"change_epoch\"):
+						level.change_epoch()
+					item_view_manager.change_materials()
+					await get_tree().create_timer(0.2).timeout
+					flash.visible = false
+					await get_tree().create_timer(0.5).timeout
+					animation_device.play_backwards(\"change\")
+					locked_controls = false
+		if event is InputEventMouseButton:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			
+	if event.is_action_pressed(\"pause\"):
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		if mouse_view and !ui_open:
+			if obj.has_method(\"exit_pc\"):
+				obj.exit_pc(self)
+			if obj.has_method(\"exit\"):
+				obj.exit(self)
+			if obj.has_method(\"exit_interact\"):
+				obj.exit_interact(self)
+		#if Input.is_action_just_pressed(\"right_click\"):
+			#drop_item()
+			
+func _physics_process(delta: float) -> void:
+	if !locked_controls:
+		if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+			return
+		check_for_interactable_pickable()
+		if not is_on_floor():
+			velocity += get_gravity() * delta
+
+		if Input.is_action_just_pressed(\"ui_accept\") and is_on_floor():
+			velocity.y = JUMP_VELOCITY
+
+		var input_dir := Input.get_vector(\"move_left\", \"move_right\", \"move_forward\", \"move_backwards\")
+		var direction :Vector3= (camera_pivot.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+		if direction:
+			#camera_anim_player.play(\"camera_walking\")
+			velocity.x = direction.x * SPEED
+			velocity.z = direction.z * SPEED
+		else:
+			#camera_anim_player.play(\"camera_idle\")
+			velocity.x = move_toward(velocity.x, 0, SPEED)
+			velocity.z = move_toward(velocity.z, 0, SPEED)
+
+		move_and_slide()
+		check_interaction()
+
+func atualizar_ui_inventario() -> void:
+
+	for i in range(botoes_carregadores.size()):
+
+		var botao = botoes_carregadores[i]
+
+		if i < inventario_carregadores.size():
+
+			var carregador = inventario_carregadores[i]
+
+			botao.visible = true
+
+			botao.text = (
+				WeaponTypes.nome_tipo(carregador.tipo_arma) + \"\\n\" +
+				str(carregador.current_capacity) + \" / \" +
+				str(carregador.capacity) + \"\\n\" +
+				str(carregador.massa_gramas) + \" g\"
+			)
+
+		else:
+			botao.visible = false
+
+	if arma_atual != null:
+		progress_bar.text = (
+			str(arma_atual.municao_atual) + \"/\" +
+			str(arma_atual.capacidade_arma)
+		)
+
+		label.text = WeaponTypes.nome_tipo(arma_atual.tipo_carregador)
+
+const MAX_CARREGADORES = 4
+
+func coletar_carregador(carregador):
+	# Procura um carregador igual
+	for carregador_inventario in inventario_carregadores:
+		if (
+			carregador_inventario.tipo_arma == carregador.tipo_arma
+			and is_equal_approx(
+				carregador_inventario.massa_gramas,
+				carregador.massa_gramas
+			)
+		):
+			# Soma a munição
+			carregador_inventario.current_capacity += carregador.current_capacity
+
+			 #Não ultrapassa a capacidade máxima
+			carregador_inventario.current_capacity = min(
+				carregador_inventario.current_capacity,
+				carregador_inventario.capacity
+			)
+
+			 # Apenas esconde o carregador coletado
+			carregador.visible = false
+			atualizar_ui_inventario()
+
+			print(\"Carregador agrupado!\")
+			return
+
+	# Se não encontrou igual, verifica os 4 slots
+	if inventario_carregadores.size() >= MAX_CARREGADORES:
+		print(\"Inventário cheio!\")
+		return
+
+	# Adiciona como novo slot
+	inventario_carregadores.append(carregador)
+	carregador.visible = false
+
+	atualizar_ui_inventario()
+
+	print(\"Novo carregador adicionado!\")
+
+func remover_carregadores_vazios():
+	for i in range(inventario_carregadores.size() - 1, -1, -1):
+		var carregador = inventario_carregadores[i]
+
+		if carregador.current_capacity <= 0:
+			if arma_atual.carregador_equipado == carregador:
+				arma_atual.carregador_equipado = null
+
+			inventario_carregadores.remove_at(i)
+			carregador.queue_free()
+
+	atualizar_ui_inventario()
+
+func tipo_carregador_existe(carragador):
+	for c in inventario_carregadores:
+		if c.get_tipo_carregador == carragador.get_tipo_carregador:
+			c.current_capacity += carragador.current_capacity
+			return true
+	return false
+
+func selecionar_carregador(indice: int):
+	if indice < 0 or indice >= inventario_carregadores.size():
+		return
+
+	var carregador = inventario_carregadores[indice]
+	arma_atual.tentar_equipar_carregador(carregador)
+	botoes_carregadores[indice].grab_focus()
+func check_for_interactable_pickable():
+
+	if not ray.is_colliding():
+		return
+	
+	if ray.is_colliding():
+		obj = ray.get_collider()
+		
+		
+		if obj == null:
+			return
+		var weapon = obj.get_parent()
+		if weapon.is_in_group(\"weapon\"):
+			if Input.is_action_just_pressed(\"change\"):
+				trocar_arma_com_chao(weapon)
+			return
+		var carregador = obj.get_parent().get_parent()
+
+		if carregador.has_method(\"get_tipo_carregador\"):
+			if Input.is_action_just_pressed(\"change\"):
+				if inventario_carregadores.size() < 4:
+					coletar_carregador(carregador)
+				else:
+					print(\"inventario cheio\")
+		if obj == null:
+			return
+		if obj.is_in_group(\"Interactable\"):
+			crosshair.set_active(true)
+			if obj.has_method(\"toggle_drawer\"):
+				if Input.is_action_just_pressed(\"interact\"):
+					obj.toggle_drawer()
+			if obj.has_method(\"anim_handler\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+					camera.current = false
+					await obj.anim_handler(self)
+					camera.current = true
+			if obj.has_method(\"anim_handler_terminal\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+					camera.current = false
+					await obj.anim_handler_terminal(self)
+			if obj.has_method(\"run_anim\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+					await obj.run_anim(self)
+			if obj.has_method(\"colect\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+					obj.colect()
+			if obj.has_method(\"pick_cube\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+					obj.pick_cube(self)
+			if obj.has_method(\"open\"):
+				if Input.is_action_just_pressed(\"change\"):
+					obj.open()
+			if obj.has_method(\"picked\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+					obj.picked()
+			if obj.has_method(\"interact\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+					obj.interact(self)
+			if obj.has_method(\"acess_pc\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+						obj.acess_pc(self)
+			if obj.has_method(\"access_pc_present\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+					if GameManager.has_energy:
+						obj.access_pc_present(self)
+			if obj.has_method(\"pick_docs\"):
+				if Input.is_action_just_pressed(\"left_click\"):
+						obj.pick_docs(self)
+
+		else:
+			crosshair.set_active(false)
+		if obj.is_in_group(\"Pickable\"):
+			pass
+			#print(str(obj) + \"pickable\")
+			#crosshair.get_child(0).set_active(true)
+		if obj.has_method(\"pick_item\"):
+			if Input.is_action_just_pressed(\"left_click\"):
+				obj.pick_item()
+
+	else:
+		crosshair.set_active(false)
+
+func hold_item(item_id):
+
+	current_item = item_id
+
+	for item in held_items.values():
+		item.visible = false
+
+	if held_items.has(item_id):
+		held_items[item_id].visible = true
+
+func force_recover_item(item):
+	print(\"Force recovery\")
+
+	item.freeze = false
+	item.visible = true
+	item.state = item.State.WORLD
+
+	item.global_position = hold_position.global_position
+	item.linear_velocity = Vector3.ZERO
+	item.angular_velocity = Vector3.ZERO
+
+func toggle_crosshair():
+	if crosshair.get_children()[0].has_method(\"toggle_visibility\"):
+		crosshair.get_children()[0].toggle_visibility()
+
+func pick_item(item: RigidBody3D):
+	if held_item != null:
+		return
+	
+	if item.item_id == \"cabinet_key\":
+		#print(\"com energia\")
+		#GameManager.has_energy = true
+		GameManager.has_cabinet_key = true
+	
+	if item.item_id == \"cube\":
+		GameManager.has_cube = true
+		print(GameManager.has_cube)
+		
+	
+	if item.item_id == \"fuse\":
+		print(\"com fuse\")
+		GameManager.has_fuse = true
+	
+	if item.item_id == \"key\":
+		#print(\"sem energia\")
+		#GameManager.has_energy = false
+		GameManager.has_secret_key = true
+	audio_stream_player_3d.play()
+	held_items[item.item_id].visible = true
+	
+	held_item = item
+
+	item.owner_player = self
+	item.state = item.State.HELD
+	#item.reparent(self.hold_position)
+	item.freeze = true
+	item.visible = false
+	item.sleeping = true
+
+	item.freeze = true
+	item.visible = false
+	item.linear_velocity = Vector3.ZERO
+	item.angular_velocity = Vector3.ZERO
+
+func drop_item():
+	if held_item == null:
+		return
+	
+	var item = held_item
+	
+	#print(item)
+	if item.item_id == \"cabinet_key\":
+		#print(\"sem energia\")
+		#GameManager.has_energy = false
+		GameManager.has_cabinet_key = false
+	
+	if item.item_id == \"cube\":
+		GameManager.has_cube = false
+		print(GameManager.has_cube)
+		
+	
+	if item.item_id == \"fuse\":
+		print(\"com fuse\")
+		GameManager.has_fuse = false
+	
+	if item.item_id == \"key\":
+		#print(\"sem energia\")
+		#GameManager.has_energy = false
+		GameManager.has_secret_key = false
+
+	#item.reparent(get_tree().current_scene)
+	item.freeze = false
+	item.visible = true
+	item.sleeping = false
+	
+	audio_stream_player_3d.play()
+	held_items[item.item_id].visible = false
+
+	item.state = item.State.WORLD
+	item.owner_player = null
+
+	item.global_position = hold_position.global_position
+
+	item.freeze = false
+	item.visible = true
+
+	var dir = -camera.global_transform.basis.z
+	item.linear_velocity = Vector3.ZERO
+	item.angular_velocity = Vector3.ZERO
+
+	item.apply_impulse(dir * 2.5 + Vector3.UP * 0.5, Vector3.ZERO)
+	
+	item.axis_lock_angular_x = true
+	item.axis_lock_angular_z = true
+	item.axis_lock_angular_y = true
+	
+	await get_tree().create_timer(0.2).timeout
+
+	item.axis_lock_angular_x = false
+	item.axis_lock_angular_z = false
+	item.axis_lock_angular_y = false
+
+	held_item = null
+
+#func trocar_arma(indice: int):
+	#
+	#if indice < 0 or indice >= armas.size():
+		#return
+#
+	#if indice == indice_arma_atual:
+		#return
+	#
+	#arma_atual.ativa = false
+	#arma_atual.gatilho_pressionado = false
+	#
+	#arma_atual.visible = false
+#
+	#indice_arma_atual = indice
+	#arma_atual = armas[indice_arma_atual]
+#
+	#arma_atual.ativa = false
+	##arma_atual.visible = true
+#
+	#atualizar_ui_inventario()
+	#
+	#label.text = WeaponTypes.nome_tipo(arma_atual.tipo_carregador)
+#
+	#print(\"Arma atual: \", indice_arma_atual)
+
+func atualizar_visual_arma() -> void:
+	for view in armas_view:
+		view.visible = false
+
+	if arma_atual == null:
+		return
+
+	if arma_atual.tipo_carregador == WeaponTypes.MagazineType.PistolGlock:
+		armas_view[0].visible = true
+
+		arma_atual.muzzle = (
+			$CameraPivot/Camera3D/HoldPosition/item_view_manager/gun_view
+			.get_node(\"muzzle_ref\")
+		)
+
+	elif arma_atual.tipo_carregador == WeaponTypes.MagazineType.Rifle:
+		armas_view[1].visible = true
+
+		arma_atual.muzzle = (
+			$CameraPivot/Camera3D/HoldPosition/item_view_manager/rifle_view
+			.get_node(\"muzzle_ref\")
+		)
+	
+	elif arma_atual.tipo_carregador == WeaponTypes.MagazineType.Shotgun:
+		armas_view[2].visible = true
+
+		arma_atual.muzzle = (
+			$CameraPivot/Camera3D/HoldPosition/item_view_manager/shotgun_view
+			.get_node(\"muzzle_ref\")
+		)
+		
+	elif arma_atual.tipo_carregador == WeaponTypes.MagazineType.Pistol1911:
+		armas_view[3].visible = true
+
+		arma_atual.muzzle = (
+			$CameraPivot/Camera3D/HoldPosition/item_view_manager/pistoll_1911_view
+			.get_node(\"muzzle_ref\")
+		)
+
+	print(\"Arma atual: \", arma_atual)
+	print(\"Muzzle: \", arma_atual.muzzle)
+
+func trocar_arma_com_chao(arma_do_chao) -> void:
+	if arma_do_chao == null:
+		print(\"ERRO: arma_do_chao é null\")
+		return
+
+	if arma_do_chao == arma_atual:
+		print(\"ERRO: arma do chão já é a arma atual\")
+		return
+
+	print(\"========== TROCA ==========\")
+	print(\"Arma atual: \", arma_atual.name)
+	print(\"Arma encontrada: \", arma_do_chao.name)
+
+	var arma_antiga = arma_atual
+
+	# Guarda posição da arma encontrada no chão
+	var posicao_chao = arma_do_chao.global_position
+	var rotacao_chao = arma_do_chao.global_rotation
+
+	print(\"Posição da arma do chão: \", posicao_chao)
+
+	# -------------------------
+	# ARMA ATUAL VAI PARA O CHÃO
+	# -------------------------
+
+	arma_antiga.ativa = false
+	arma_antiga.gatilho_pressionado = false
+	arma_antiga.visible = true
+
+	arma_antiga.global_position = posicao_chao
+	arma_antiga.global_rotation = rotacao_chao
+	arma_antiga.ativar_collision()
+
+	# -------------------------
+	# NOVA ARMA VIRA A ATUAL
+	# -------------------------
+
+	arma_atual = arma_do_chao
+
+	arma_atual.player = self
+	arma_atual.ativa = true
+	arma_atual.gatilho_pressionado = false
+	arma_atual.disable_collision()
+
+	# Física escondida
+	arma_atual.visible = false
+
+	print(\"Nova arma atual: \", arma_atual.name)
+	print(\"Tipo: \", WeaponTypes.nome_tipo(arma_atual.tipo_carregador))
+
+	# Atualiza view e muzzle
+	atualizar_visual_arma()
+
+	# Atualiza UI
+	atualizar_ui_inventario()
+
+	print(\"Arma trocada!\")
+	print(\"===========================\")
+"
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_v0iea"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_cvnsp"]
+
+[sub_resource type="Animation" id="Animation_f60y1"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.18516165, -0.43947136)]
+}
+
+[sub_resource type="Animation" id="Animation_v0iea"]
+resource_name = "crouch"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, -0.4, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_cvnsp"]
+resource_name = "stand"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.39990044, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_6t5aa"]
+_data = {
+&"RESET": SubResource("Animation_f60y1"),
+&"crouch": SubResource("Animation_v0iea"),
+&"stand": SubResource("Animation_cvnsp")
+}
+
+[sub_resource type="GDScript" id="GDScript_3smsa"]
+resource_name = "item_view_manager"
+script/source = "extends Node3D
+
+@onready var key_view: Node3D = $key_view
+@onready var fuse_view: Node3D = $fuse_view
+@onready var cube_view: Node3D = $cube_view
+@onready var cabinet_key_view: Node3D = $cabinet_key_view
+
+func change_materials():
+	cabinet_key_view.change_material()
+	key_view.change_material()
+	cube_view.change_material()
+"
+
+[sub_resource type="GDScript" id="GDScript_8erm5"]
+resource_name = "cube_view"
+script/source = "extends Node3D
+
+@onready var present_material : Array = [preload(\"res://Assets/Materials/Cube/cube.tres\")]
+@onready var past_material : Array = [preload(\"res://Assets/Materials/Cube/cube_nt.tres\")]
+
+@onready var mesh_instance_3d: MeshInstance3D = $MeshInstance3D
+
+func _ready() -> void:
+	if GameManager.is_on_past:
+		mesh_instance_3d.set_surface_override_material(0, past_material[0])
+	else:
+		mesh_instance_3d.set_surface_override_material(0, present_material[0])
+
+func change_material():
+	if GameManager.is_on_past:
+		mesh_instance_3d.set_surface_override_material(0, past_material[0])
+	else:
+		mesh_instance_3d.set_surface_override_material(0, present_material[0])
+"
+
+[sub_resource type="Animation" id="Animation_fkybt"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("device_view:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.29448953, -1.0164802, -0.3625121)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("device_view:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_x3wgy"]
+resource_name = "change"
+length = 1.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("device_view:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.71),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(-0.29448953, -1.0164802, -0.3625121), Vector3(-0.2944896, -0.17586863, -0.3625121)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("device_view:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.26666668),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_3smsa"]
+_data = {
+&"RESET": SubResource("Animation_fkybt"),
+&"change": SubResource("Animation_x3wgy")
+}
+
+[sub_resource type="GDScript" id="GDScript_v0iea"]
+resource_name = "crosshair"
+script/source = "extends Control
+
+var active = true #false
+
+func set_active(value):
+	active = value
+	queue_redraw()
+
+func _draw():
+	var center = size / 2 + Vector2(6, 0)
+
+	if active:
+		draw_circle(center, 1, Color.WHITE) #6
+	else:
+		draw_arc(center, 1, 0, TAU, 32, Color.WHITE, 2)
+
+func toggle_visibility():
+	self.visible = !self.visible
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vgqql"]
+shader = ExtResource("1_v0iea")
+shader_parameter/texture_mode = 1
+shader_parameter/quantize_size = 3
+shader_parameter/snap_to_world = false
+shader_parameter/limit_subpixels = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_x3wgy"]
+shader = ExtResource("5_fkybt")
+shader_parameter/shake_power = 0.03
+shader_parameter/shake_rate = 1.0
+shader_parameter/shake_speed = 5.0
+shader_parameter/shake_block_size = 30.5
+shader_parameter/shake_color_rate = 0.01
+
+[sub_resource type="GDScript" id="GDScript_fkybt"]
+resource_name = "glitch"
+script/source = "extends ColorRect
+
+@onready var control: Control = $\"../../crosshair/Control\"
+
+
+func _ready() -> void:
+	self.visible = false
+
+func change():
+	self.visible = true
+	control.visible = false
+	await get_tree().create_timer(1).timeout
+	self.visible = false
+	control.visible = true
+"
+
+[sub_resource type="GDScript" id="GDScript_f1ek2"]
+resource_name = "feedback"
+script/source = "extends RichTextLabel
+
+# Tempo total em segundos para digitar todo o texto
+@export var velocidade_digitacao: float = 2.0
+@onready var audio_stream_player_3d_2: AudioStreamPlayer3D = $\"../../AudioStreamPlayer3D2\"
+
+func exibir_texto_digitado(novo_texto: String):
+	text = novo_texto
+	visible_characters = 0
+
+	audio_stream_player_3d_2.play()
+
+	var tween = create_tween()
+	tween.tween_property(
+		self,
+		\"visible_characters\",
+		text.length(),
+		velocidade_digitacao
+	)
+
+	await tween.finished
+
+	audio_stream_player_3d_2.stop()
+	await get_tree().create_timer(3).timeout
+	self.text = \"\"
+"
+
+[node name="Player" type="CharacterBody3D" unique_id=350713607 groups=["player"]]
+collision_layer = 3
+script = SubResource("GDScript_f60y1")
+key_scene = ExtResource("1_6t5aa")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1027199689]
+visible = false
+mesh = SubResource("CapsuleMesh_v0iea")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=238677102]
+shape = SubResource("CapsuleShape3D_cvnsp")
+
+[node name="CameraPivot" type="Node3D" parent="." unique_id=902869531]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.39990044, 0)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CameraPivot" unique_id=1991395095]
+root_node = NodePath("../Camera3D")
+libraries/ = SubResource("AnimationLibrary_6t5aa")
+autoplay = &"stand"
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot" unique_id=658803078]
+transform = Transform3D(1, 0, 2.9802322e-08, 0, 1, 0, -2.9802322e-08, 0, 1, 0, 0.18516165, -0.43947136)
+current = true
+
+[node name="RayCast3D" type="RayCast3D" parent="CameraPivot/Camera3D" unique_id=1050137412]
+transform = Transform3D(1, 0, 0, 0, -4.3711385e-08, -0.99999994, 0, 0.99999994, -4.3711385e-08, 0, 0, 0)
+target_position = Vector3(0, -2, 0)
+collision_mask = 9
+collide_with_areas = true
+
+[node name="HoldPosition" type="Marker3D" parent="CameraPivot/Camera3D" unique_id=173554141]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.041003138, 0, -0.13983363)
+
+[node name="item_view_manager" type="Node3D" parent="CameraPivot/Camera3D/HoldPosition" unique_id=1982308002]
+script = SubResource("GDScript_3smsa")
+
+[node name="key_view" parent="CameraPivot/Camera3D/HoldPosition/item_view_manager" unique_id=1775069439 instance=ExtResource("2_vgqql")]
+transform = Transform3D(8.742275e-09, -0.2, -3.019916e-08, -0.2, -8.742278e-09, 1.7029905e-08, -1.7029906e-08, 3.019916e-08, -0.2, 0.4673757, -0.23832011, -0.3630432)
+visible = false
+
+[node name="fuse_view" parent="CameraPivot/Camera3D/HoldPosition/item_view_manager" unique_id=1944163727 instance=ExtResource("3_3smsa")]
+transform = Transform3D(1.3113413e-08, -0.3, -4.5298748e-08, -0.3, -1.3113417e-08, 2.5544859e-08, -2.554486e-08, 4.5298748e-08, -0.3, 0.46737558, -0.23832011, -0.36304325)
+visible = false
+
+[node name="cube_view" parent="CameraPivot/Camera3D/HoldPosition/item_view_manager" unique_id=43290667 instance=ExtResource("4_8erm5")]
+transform = Transform3D(3.49691e-08, -0.8, -1.2079664e-07, -0.8, -3.4969112e-08, 6.811962e-08, -6.8119625e-08, 1.2079664e-07, -0.8, 0.4673757, -0.23832011, -0.3630432)
+visible = false
+script = SubResource("GDScript_8erm5")
+
+[node name="cabinet_key_view" parent="CameraPivot/Camera3D/HoldPosition/item_view_manager" unique_id=998589994 instance=ExtResource("5_f1ek2")]
+transform = Transform3D(8.742275e-09, -0.2, -3.019916e-08, -0.2, -8.742278e-09, 1.7029905e-08, -1.7029906e-08, 3.019916e-08, -0.2, 0.4673757, -0.23832011, -0.3630432)
+visible = false
+
+[node name="gun_view" parent="CameraPivot/Camera3D/HoldPosition/item_view_manager" unique_id=1159778503 instance=ExtResource("7_ukyrk")]
+transform = Transform3D(1.013279e-07, -7.231926e-08, 0.39999998, 4.97147e-15, 0.39999998, 7.231925e-08, -0.39999998, -1.6366137e-14, 1.013279e-07, 0.5765964, -0.23832011, -0.36304325)
+visible = false
+
+[node name="rifle_view" parent="CameraPivot/Camera3D/HoldPosition/item_view_manager" unique_id=1169596893 instance=ExtResource("9_h4iuc")]
+transform = Transform3D(7.7882866e-08, -7.231923e-08, 0.39999998, 3.5002546e-15, 0.39999995, 7.231923e-08, -0.39999998, -1.058082e-14, 7.7882866e-08, 0.48004806, -0.23832011, -0.6335017)
+visible = false
+
+[node name="shotgun_view" parent="CameraPivot/Camera3D/HoldPosition/item_view_manager" unique_id=2049761069 instance=ExtResource("8_7dp3o")]
+transform = Transform3D(7.788287e-08, -7.231923e-08, 0.39999998, 3.5002546e-15, 0.39999995, 7.231923e-08, -0.39999998, -1.058082e-14, 7.788287e-08, 0.48004806, -0.23832011, -0.7689349)
+visible = false
+
+[node name="pistoll_1911_view" parent="CameraPivot/Camera3D/HoldPosition/item_view_manager" unique_id=2111486950 instance=ExtResource("9_fd4e3")]
+transform = Transform3D(7.7882866e-08, -7.231926e-08, 0.39999998, 4.97147e-15, 0.39999998, 7.231926e-08, -0.39999998, -9.10961e-15, 7.7882866e-08, 0.5765964, -0.23832011, -0.36304325)
+visible = false
+
+[node name="device_view" parent="CameraPivot/Camera3D" unique_id=737964254 instance=ExtResource("3_x3wgy")]
+transform = Transform3D(0.025881901, 0.096592575, -0.17320512, -0.1931852, 0.051763795, -9.459813e-09, 0.04482876, 0.16730331, 0.09999999, -0.29448953, -1.0164802, -0.3625121)
+visible = false
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CameraPivot/Camera3D" unique_id=1911700935]
+libraries/ = SubResource("AnimationLibrary_3smsa")
+
+[node name="crosshair" type="CanvasLayer" parent="." unique_id=1443072974]
+
+[node name="Control" type="Control" parent="crosshair" unique_id=818014165]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+mouse_behavior_recursive = 1
+script = SubResource("GDScript_v0iea")
+metadata/_edit_use_anchors_ = true
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=909402603]
+
+[node name="Texture" type="ColorRect" parent="UI" unique_id=175062974]
+visible = false
+material = SubResource("ShaderMaterial_vgqql")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_behavior_recursive = 1
+
+[node name="Glitch" type="ColorRect" parent="UI" unique_id=620647952]
+visible = false
+material = SubResource("ShaderMaterial_x3wgy")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_behavior_recursive = 1
+script = SubResource("GDScript_fkybt")
+
+[node name="Flash" type="ColorRect" parent="UI" unique_id=922937493]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.4351923, 0.43519226, 0.43519226, 1)
+
+[node name="RichTextLabel" type="RichTextLabel" parent="UI" unique_id=620185323]
+custom_minimum_size = Vector2(500, 80)
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_fonts/normal_font = ExtResource("8_8erm5")
+theme_override_font_sizes/normal_font_size = 24
+horizontal_alignment = 1
+script = SubResource("GDScript_f1ek2")
+metadata/_edit_use_anchors_ = true
+
+[node name="Control" type="Control" parent="UI" unique_id=145233278]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Control" unique_id=1542926339]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -80.0
+offset_top = -70.0
+offset_right = 78.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Button" type="Button" parent="UI/Control/HBoxContainer" unique_id=1445927271]
+visible = false
+custom_minimum_size = Vector2(60, 60)
+custom_maximum_size = Vector2(60, 60)
+layout_mode = 2
+theme_override_constants/line_spacing = -5
+theme_override_font_sizes/font_size = 12
+button_mask = 0
+autowrap_mode = 3
+
+[node name="Label" type="Label" parent="UI/Control/HBoxContainer/Button" unique_id=377115349]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 44.0
+offset_right = 43.0
+offset_bottom = 67.0
+theme_override_font_sizes/font_size = 12
+text = "1"
+
+[node name="Button2" type="Button" parent="UI/Control/HBoxContainer" unique_id=1453251283]
+visible = false
+custom_minimum_size = Vector2(60, 60)
+custom_maximum_size = Vector2(60, 60)
+layout_mode = 2
+theme_override_constants/line_spacing = -5
+theme_override_font_sizes/font_size = 12
+
+[node name="Label" type="Label" parent="UI/Control/HBoxContainer/Button2" unique_id=2045257061]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 44.0
+offset_right = 43.0
+offset_bottom = 67.0
+theme_override_font_sizes/font_size = 12
+text = "2"
+
+[node name="Button3" type="Button" parent="UI/Control/HBoxContainer" unique_id=1836696849]
+visible = false
+custom_minimum_size = Vector2(60, 60)
+custom_maximum_size = Vector2(60, 60)
+layout_mode = 2
+theme_override_constants/line_spacing = -5
+theme_override_font_sizes/font_size = 12
+
+[node name="Label" type="Label" parent="UI/Control/HBoxContainer/Button3" unique_id=1345361849]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 44.0
+offset_right = 43.0
+offset_bottom = 67.0
+theme_override_font_sizes/font_size = 12
+text = "3"
+
+[node name="Button4" type="Button" parent="UI/Control/HBoxContainer" unique_id=34011658]
+visible = false
+custom_minimum_size = Vector2(60, 60)
+custom_maximum_size = Vector2(60, 60)
+layout_mode = 2
+theme_override_constants/line_spacing = -5
+theme_override_font_sizes/font_size = 12
+
+[node name="Label" type="Label" parent="UI/Control/HBoxContainer/Button4" unique_id=1139939327]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 44.0
+offset_right = 43.0
+offset_bottom = 67.0
+theme_override_font_sizes/font_size = 12
+text = "4"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Control" unique_id=1559656598]
+layout_mode = 0
+offset_left = 932.0
+offset_top = 19.0
+offset_right = 1138.0
+offset_bottom = 98.0
+alignment = 1
+
+[node name="Label" type="Label" parent="UI/Control/VBoxContainer" unique_id=655640086]
+layout_mode = 2
+
+[node name="ProgressBar" type="Label" parent="UI/Control/VBoxContainer" unique_id=847833476]
+layout_mode = 2
+
+[node name="controls" type="VBoxContainer" parent="UI/Control" unique_id=1641701554]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 19.0
+offset_right = 225.0
+offset_bottom = 98.0
+alignment = 1
+
+[node name="Label" type="Label" parent="UI/Control/controls" unique_id=1796415193]
+layout_mode = 2
+
+[node name="ProgressBar" type="Label" parent="UI/Control/controls" unique_id=394900495]
+layout_mode = 2
+
+[node name="enemies" type="VBoxContainer" parent="UI/Control" unique_id=260607636]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -114.0
+offset_top = 19.0
+offset_right = 92.0
+offset_bottom = 98.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="UI/Control/enemies" unique_id=521205879]
+layout_mode = 2
+
+[node name="FinalScreen" type="CanvasLayer" parent="." unique_id=1919137146]
+visible = false
+
+[node name="ColorRect" type="ColorRect" parent="FinalScreen" unique_id=982987184]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="RichTextLabel" type="RichTextLabel" parent="FinalScreen" unique_id=382332610]
+custom_minimum_size = Vector2(400, 0)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/normal_font = ExtResource("8_8erm5")
+theme_override_font_sizes/normal_font_size = 24
+text = "did you really scaped from loop?
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=1441633721]
+stream = ExtResource("10_tx1dd")
+
+[node name="AudioStreamPlayer3D2" type="AudioStreamPlayer3D" parent="." unique_id=952713063]
+stream = ExtResource("11_gymyn")
+volume_db = -25.0

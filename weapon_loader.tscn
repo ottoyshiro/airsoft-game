@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://4167i1i4n03b"]
+
+[ext_resource type="Script" uid="uid://cm7yx1xsoyknw" path="res://weapon_loader.gd" id="1_w1xnv"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_bhunq"]
+size = Vector3(0.2, 0.4, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d4xi6"]
+albedo_color = Color(0.38287765, 0.3747936, 0.34398, 1)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_w1xnv"]
+points = PackedVector3Array(-0.1, -0.2, -0.05, -0.1, -0.2, 0.05, -0.1, 0.2, -0.05, 0.1, -0.2, -0.05, 0.1, -0.2, 0.05, -0.1, 0.2, 0.05, 0.1, 0.2, -0.05, 0.1, 0.2, 0.05)
+
+[node name="weapon_loader" type="Node3D" unique_id=338232185]
+script = ExtResource("1_w1xnv")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=280030791]
+mesh = SubResource("BoxMesh_bhunq")
+surface_material_override/0 = SubResource("StandardMaterial3D_d4xi6")
+
+[node name="StaticBody3D" type="Area3D" parent="MeshInstance3D" unique_id=1276410095]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D" unique_id=173421364]
+shape = SubResource("ConvexPolygonShape3D_w1xnv")
+
+[connection signal="body_entered" from="MeshInstance3D/StaticBody3D" to="." method="_on_static_body_3d_body_entered"]
+[connection signal="input_event" from="MeshInstance3D/StaticBody3D" to="." method="_on_static_body_3d_input_event"]

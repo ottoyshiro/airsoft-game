@@ -1,0 +1,97 @@
+[gd_scene format=3 uid="uid://nbx7b8n7ebn7"]
+
+[sub_resource type="GDScript" id="GDScript_0phs7"]
+script/source = "extends Node3D
+
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var csg_porta: CSGBox3D = $CSGBox3D
+
+func _ready() -> void:
+	if csg_porta:
+		# 1. Verifica se existe um material aplicado diretamente no CSG
+		if csg_porta.material:
+			csg_porta.material = csg_porta.material.duplicate()
+			
+		# 2. Se você usou material por sobreposição (Material Override), duplica ele também
+		if csg_porta.material_override:
+			csg_porta.material_override = csg_porta.material_override.duplicate()
+
+func open():
+	animation_player.play(\"open\")
+"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xp12r"]
+transparency = 1
+
+[sub_resource type="Animation" id="Animation_hun61"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CSGBox3D:use_collision")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CSGBox3D:material:albedo_color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_ba8gm"]
+resource_name = "open"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CSGBox3D:use_collision")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CSGBox3D:material:albedo_color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_v6xrn"]
+_data = {
+&"RESET": SubResource("Animation_hun61"),
+&"open": SubResource("Animation_ba8gm")
+}
+
+[node name="door" type="Node3D" unique_id=197784402]
+script = SubResource("GDScript_0phs7")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=2091490412]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.38763428, -1.520276, 0)
+operation = 2
+use_collision = true
+size = Vector3(1.7752686, 2.7594483, 1)
+material = SubResource("StandardMaterial3D_xp12r")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=516494471]
+libraries/ = SubResource("AnimationLibrary_v6xrn")

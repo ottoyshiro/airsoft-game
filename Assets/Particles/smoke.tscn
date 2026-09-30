@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://r0sl7g6aohhv"]
+
+[ext_resource type="Material" uid="uid://dekxag00dsvw5" path="res://Assets/new_standard_material_3d.tres" id="1_uslku"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_erho5"]
+material = ExtResource("1_uslku")
+radius = 0.913
+height = 1.926
+radial_segments = 4
+rings = 9
+
+[node name="smoke" type="Node3D" unique_id=187643292]
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="." unique_id=523451127]
+amount = 11
+speed_scale = 1.5
+randomness = 0.95
+mesh = SubResource("SphereMesh_erho5")
+emission_shape = 1
+emission_sphere_radius = 1.05
+gravity = Vector3(0, 4.515, 0)

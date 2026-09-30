@@ -1,0 +1,86 @@
+[gd_scene format=3 uid="uid://ctuuruoyw54ji"]
+
+[ext_resource type="Material" uid="uid://bv712mopsvqcw" path="res://Scenes/Furniture/Door.tres" id="1_t2jmu"]
+[ext_resource type="Material" uid="uid://cqij46nfr8ho6" path="res://Assets/Materials/Key/key_body_nt.tres" id="2_e1yvt"]
+
+[sub_resource type="GDScript" id="GDScript_07qne"]
+resource_name = "target"
+script/source = "extends Node3D
+
+@export_range(5, 20, 5) var hp_points = 5
+@export_enum(\"blue\", \"green\", \"yellow\", \"red\") var color = \"blue\"
+@export var door : Node3D
+
+@onready var colors : Array[String] = [\"res://Assets/Materials/Terminal/red_light.tres\",
+			\"res://Assets/Materials/Terminal/green_light.tres\"]
+@onready var mesh_instance: MeshInstance3D = $MeshInstance3D2
+@onready var label: MeshInstance3D = $MeshInstance3D3
+
+func _ready() -> void:
+	if label and label.mesh:
+		label.mesh = label.mesh.duplicate()
+	label.mesh.text = \"\"
+	mesh_instance.set_surface_override_material(0, preload(\"res://Assets/Materials/Terminal/red_light.tres\"))
+
+func take_damage(amount: int) -> void:
+	hp_points -= amount
+	print(\"Inimigo tomou tiro! HP restante: \", hp_points)
+	label.mesh.text = str(hp_points)
+	if hp_points <= 0:
+		label.mesh.text = \"\"
+		print(\"you killed\")
+		mesh_instance.set_surface_override_material(0, preload(\"res://Assets/Materials/Terminal/green_light.tres\"))
+		open_door()
+
+func open_door():
+	if door.has_method(\"open\"):
+		door.open()
+"
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_bhunq"]
+height = 0.099999964
+radial_segments = 11
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_e1yvt"]
+top_radius = 0.44189453
+bottom_radius = 0.44189453
+height = 0.099999964
+radial_segments = 11
+
+[sub_resource type="GDScript" id="GDScript_xp12r"]
+script/source = "extends StaticBody3D
+
+
+func take_damage(amount):
+	self.get_parent().get_parent().take_damage(amount)
+"
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_5ebp1"]
+points = PackedVector3Array(-0.12450564, -0.049999982, -0.4239947, -0.3340416, -0.049999982, -0.28939876, -0.12450564, 0.049999982, -0.4239947, 0.12442002, -0.049999982, -0.4239947, -0.43739668, -0.049999982, -0.06292498, -0.3340416, 0.049999982, -0.28939876, 0.12442002, 0.049999982, -0.4239947, 0.33395597, -0.049999982, -0.28939876, -0.43739668, 0.049999982, -0.06292498, -0.4020316, -0.049999982, 0.1835517, 0.33395597, 0.049999982, -0.28939876, 0.43739668, -0.049999982, -0.06292498, -0.4020316, 0.049999982, 0.1835517, -0.23890695, -0.049999982, 0.3717148, 0.43739668, 0.049999982, -0.06292498, 0.40194598, -0.049999982, 0.1835517, -0.23890695, 0.049999982, 0.3717148, 0, -0.049999982, 0.44189456, 0.40194598, 0.049999982, 0.1835517, 0.23882136, -0.049999982, 0.3717148, 0, 0.049999982, 0.44189456, 0.23882136, 0.049999982, 0.3717148)
+
+[sub_resource type="TextMesh" id="TextMesh_bhunq"]
+text = "1"
+font_size = 100
+
+[node name="target" type="Node3D" unique_id=2081332620]
+script = SubResource("GDScript_07qne")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2002983049]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("CylinderMesh_bhunq")
+surface_material_override/0 = ExtResource("1_t2jmu")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=490473711]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0.057747424)
+mesh = SubResource("CylinderMesh_e1yvt")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D2" unique_id=977801532 groups=["enemy"]]
+script = SubResource("GDScript_xp12r")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D2/StaticBody3D" unique_id=2020651133]
+shape = SubResource("ConvexPolygonShape3D_5ebp1")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="." unique_id=592631198]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.0389494, 0.22115517)
+mesh = SubResource("TextMesh_bhunq")
+surface_material_override/0 = ExtResource("2_e1yvt")

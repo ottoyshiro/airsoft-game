@@ -1,0 +1,221 @@
+[gd_scene format=3 uid="uid://dkgyk8i33yega"]
+
+[ext_resource type="Texture2D" uid="uid://btfiofdoljlf8" path="res://Assets/2017-03-13-10-06-22.jpg" id="1_5i3ds"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_mg4mk"]
+
+[sub_resource type="GDScript" id="GDScript_mg4mk"]
+resource_name = "fuse"
+script/source = "extends RigidBody3D
+
+enum State {
+	WORLD,
+	HELD
+}
+
+@export var item_id: String
+
+var state: State = State.WORLD
+var owner_player = null
+var last_safe_position: Vector3
+
+#func _ready() -> void:
+	#axis_lock_angular_x = true
+	#axis_lock_angular_z = true
+	#axis_lock_angular_y = true
+
+func _physics_process(_delta):
+	if state == State.WORLD:
+		track_safety()
+
+
+func track_safety():
+	# salva posição válida
+	if linear_velocity.length() < 1.0:
+		last_safe_position = global_position
+
+	# caiu do mapa
+	if global_position.y < -50:
+		trigger_recovery(\"fell_out\")
+
+
+func trigger_recovery(reason: String):
+	print(\"Recovery:\", reason)
+
+	if owner_player:
+		owner_player.force_recover_item(self)
+	else:
+		respawn_at_safe_point()
+
+
+func respawn_at_safe_point():
+	global_position = last_safe_position + Vector3.UP * 1.0
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
+"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_66x6e"]
+transparency = 1
+albedo_color = Color(1, 1, 1, 0.19607843)
+emission_enabled = true
+emission = Color(0.7128467, 0.5789826, 0, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_vmpf5"]
+material = SubResource("StandardMaterial3D_66x6e")
+top_radius = 0.2
+bottom_radius = 0.2
+height = 0.8
+radial_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5i1ec"]
+albedo_color = Color(0.99999994, 0.82230026, 0.60583097, 1)
+albedo_texture = ExtResource("1_5i3ds")
+roughness = 0.0
+uv1_scale = Vector3(4.355, 8.125, 1.175)
+uv1_offset = Vector3(1.56, 0.715, 0)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_qo8bt"]
+material = SubResource("StandardMaterial3D_5i1ec")
+top_radius = 0.25
+bottom_radius = 0.25
+height = 0.3
+radial_segments = 6
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5i3ds"]
+size = Vector3(0.5, 1.4, 0.4)
+
+[sub_resource type="Animation" id="Animation_1lxvt"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("OmniLight3D:light_energy")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("OmniLight3D:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("OmniLight3D:omni_range")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.336]
+}
+
+[sub_resource type="Animation" id="Animation_rkgv6"]
+resource_name = "light"
+length = 2.0
+loop_mode = 2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("OmniLight3D:light_energy")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.05, 0.3]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("OmniLight3D:omni_range")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.006, 0.3]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("OmniLight3D:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_mg4mk"]
+_data = {
+&"RESET": SubResource("Animation_1lxvt"),
+&"light": SubResource("Animation_rkgv6")
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kdp4w"]
+albedo_color = Color(1, 1, 0.3647059, 1)
+emission_enabled = true
+emission = Color(0.78431374, 0.49411765, 0, 1)
+emission_energy_multiplier = 16.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_2dvfy"]
+material = SubResource("StandardMaterial3D_kdp4w")
+top_radius = 0.01
+bottom_radius = 0.01
+height = 0.842
+radial_segments = 4
+
+[node name="fuse" type="RigidBody3D" unique_id=437364417 groups=["Interactable"]]
+collision_layer = 8
+physics_material_override = SubResource("PhysicsMaterial_mg4mk")
+continuous_cd = true
+script = SubResource("GDScript_mg4mk")
+item_id = "fuse"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=638834415]
+transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("CylinderMesh_vmpf5")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=2121478230]
+transform = Transform3D(1.3113416e-07, -1, 0, 1, 1.3113416e-07, 0, 0, 0, 1, -0.49054232, 0, 0)
+mesh = SubResource("CylinderMesh_qo8bt")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="." unique_id=484514375]
+transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, 0.56343555, 0, 0)
+mesh = SubResource("CylinderMesh_qo8bt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=460169984]
+transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, 0.03958743, -3.7252903e-08, 2.9802322e-08)
+shape = SubResource("BoxShape3D_5i3ds")
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=643567463]
+libraries/ = SubResource("AnimationLibrary_mg4mk")
+autoplay = &"light"
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=2095363776]
+visible = false
+light_color = Color(0.7155721, 0.6889569, 3.85046e-07, 1)
+light_energy = 0.0
+omni_range = 0.336
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="." unique_id=1450700058]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("CylinderMesh_2dvfy")

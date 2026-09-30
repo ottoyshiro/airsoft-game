@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://bcjehcqsc2uvo"]
+
+[ext_resource type="PackedScene" uid="uid://c225oea00bq2l" path="res://Scenes/player.tscn" id="1_noarx"]
+[ext_resource type="PackedScene" uid="uid://diibp855ppmk5" path="res://Scenes/Furniture/electric_door.tscn" id="2_a0tk4"]
+
+[node name="Node3D" type="Node3D" unique_id=99147534]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=2134129952]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8100586, 0, 0.7199707)
+use_collision = true
+size = Vector3(12.483398, 1, 6.753418)
+
+[node name="Player" parent="CSGBox3D" unique_id=350713607 instance=ExtResource("1_noarx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.056123, 1.7833683, 0)
+
+[node name="electric_door" parent="." unique_id=625204473 instance=ExtResource("2_a0tk4")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 1.8970039, 0)

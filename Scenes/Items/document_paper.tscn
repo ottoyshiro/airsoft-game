@@ -1,0 +1,160 @@
+[gd_scene format=3 uid="uid://8dg3dofo2plf"]
+
+[ext_resource type="FontFile" uid="uid://c3xmoq3uc514" path="res://Assets/Fonts/PixelifySans-VariableFont_wght.ttf" id="1_palb5"]
+[ext_resource type="AudioStream" uid="uid://d374kdtgb6mad" path="res://Assets/Sounds/563465__nicholasdaryl__itempickup.wav" id="2_pdtqu"]
+
+[sub_resource type="GDScript" id="GDScript_x40ch"]
+resource_name = "doc_paper"
+script/source = "extends Node3D
+
+@export var text : String
+@export var type : int
+"
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_miejs"]
+size = Vector2(0.8, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_palb5"]
+albedo_color = Color(1, 1, 0.7411765, 1)
+roughness = 0.0
+
+[sub_resource type="GDScript" id="GDScript_miejs"]
+resource_name = "document"
+script/source = "extends StaticBody3D
+
+@onready var control: Control = $\"../Control\"
+@onready var rich_text_label: RichTextLabel = $\"../Control/Panel/RichTextLabel\"
+@onready var texture_button: TextureButton = $\"../Control/TextureButton\"
+@onready var audio_stream_player_3d: AudioStreamPlayer3D = $\"../AudioStreamPlayer3D\"
+
+var player_instance
+
+func _ready() -> void:
+	control.visible = false
+	rich_text_label.text = self.get_parent().text
+
+func set_player(player):
+	self.player_instance = player
+
+func pick_docs(player):
+	audio_stream_player_3d.play()
+	GameManager.documents[self.get_parent().type] = true
+	GameManager.documents_text[self.get_parent().type] = self.get_parent().text
+	self.set_player(player)
+	self.get_parent().visible = false
+	self.remove_from_group(\"Interactable\")
+	player.locked_controls = true
+	player.crosshair.visible = false
+	if player.held_item != null:
+		player.held_items[player.held_item.item_id].visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	player.texture.material.set_shader_parameter(
+		\"quantize_size\",
+		 1)
+	control.visible = true
+	
+func exit_docs(player):
+	player.locked_controls = false
+	if player.held_item != null:
+		player.held_items[player.held_item.item_id].visible = true
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	control.visible = false
+	player.texture.material.set_shader_parameter(
+		\"quantize_size\",
+		 3)
+	player.crosshair.visible = true
+
+
+func _on_texture_button_pressed() -> void:
+	exit_docs(player_instance)
+	self.get_parent().queue_free()
+"
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_palb5"]
+data = PackedVector3Array(0.4, -0.25, -0.0075, -0.4, -0.096548975, -0.0075, -0.24654898, -0.25, -0.0075, -0.4, 0.25, -0.0075, -0.4, -0.096548975, -0.0075, 0.4, -0.25, -0.0075, 0.4, -0.25, 0.0075, -0.24654898, -0.25, -0.0075, -0.24654898, -0.25, 0.0075, 0.4, 0.25, 0.0075, -0.24654898, -0.25, 0.0075, -0.4, -0.096548975, 0.0075, -0.4, 0.25, -0.0075, -0.4, -0.096548975, 0.0075, -0.4, -0.096548975, -0.0075, -0.4, 0.25, -0.0075, -0.4, 0.25, 0.0075, -0.4, -0.096548975, 0.0075, -0.4, 0.25, -0.0075, 0.4, 0.25, 0.0075, -0.4, 0.25, 0.0075, -0.4, 0.25, 0.0075, 0.4, 0.25, 0.0075, -0.4, -0.096548975, 0.0075, 0.4, -0.25, -0.0075, -0.24654898, -0.25, -0.0075, 0.4, -0.25, 0.0075, 0.4, -0.25, 0.0075, -0.24654898, -0.25, 0.0075, 0.4, 0.25, 0.0075, 0.4, -0.25, -0.0075, 0.4, -0.25, 0.0075, 0.4, 0.25, 0.0075, -0.4, 0.25, -0.0075, 0.4, -0.25, -0.0075, 0.4, 0.25, -0.0075, -0.4, 0.25, -0.0075, 0.4, 0.25, -0.0075, 0.4, 0.25, 0.0075, 0.4, -0.25, -0.0075, 0.4, 0.25, 0.0075, 0.4, 0.25, -0.0075, -0.24654898, -0.25, -0.0075, -0.4, -0.096548975, -0.0075, -0.24654898, -0.25, 0.0075, -0.4, -0.096548975, 0.0075, -0.24654898, -0.25, 0.0075, -0.4, -0.096548975, -0.0075)
+
+[node name="document_paper" type="Node3D" unique_id=390436942]
+script = SubResource("GDScript_x40ch")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=89191102]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.017137915, 0)
+mesh = SubResource("PlaneMesh_miejs")
+surface_material_override/0 = SubResource("StandardMaterial3D_palb5")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="." unique_id=1932518621]
+transform = Transform3D(0.99362314, 0, -0.11275233, 0, 1, 0, 0.11275233, 0, 0.99362314, 0, 0.017137915, 0)
+mesh = SubResource("PlaneMesh_miejs")
+surface_material_override/0 = SubResource("StandardMaterial3D_palb5")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="." unique_id=1951452267]
+transform = Transform3D(0.9985352, 0.00010972419, -0.054105546, -0.0005171773, 0.9999716, -0.007516824, 0.05410318, 0.007533796, 0.9985069, 0, 0.017137915, 0)
+mesh = SubResource("PlaneMesh_miejs")
+surface_material_override/0 = SubResource("StandardMaterial3D_palb5")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=1131904253]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.018449306, 0)
+size = Vector3(0.8, 0.5, 0.015)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="CSGBox3D" unique_id=733312067]
+transform = Transform3D(0.70710677, -0.70710677, -3.090862e-08, 0.70710677, 0.70710677, -1.2802769e-08, 3.090862e-08, -1.2802769e-08, 1, -0.38733795, -0.25841054, -1.1175871e-08)
+operation = 2
+size = Vector3(0.211, 0.5, 0.16)
+
+[node name="Control" type="Control" parent="." unique_id=980257601]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="Control" unique_id=105211994]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -288.0
+offset_top = -242.75
+offset_right = 288.0
+offset_bottom = 242.75
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Control/Panel" unique_id=772947924]
+custom_minimum_size = Vector2(450, 450)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/normal_font = ExtResource("1_palb5")
+
+[node name="TextureButton" type="TextureButton" parent="Control" unique_id=976737843]
+modulate = Color(1, 1, 1, 0.44313726)
+layout_mode = 0
+offset_left = -1.0
+offset_top = -3.0
+offset_right = 14411.5
+offset_bottom = 8147.0
+scale = Vector2(0.08, 0.08)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=55599912 groups=["Interactable"]]
+script = SubResource("GDScript_miejs")
+
+[node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1955382779]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.018449306, 0)
+shape = SubResource("ConcavePolygonShape3D_palb5")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=1009953764]
+stream = ExtResource("2_pdtqu")
+
+[connection signal="pressed" from="Control/TextureButton" to="StaticBody3D" method="_on_texture_button_pressed"]

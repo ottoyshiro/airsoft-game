@@ -1,0 +1,411 @@
+[gd_scene format=3 uid="uid://bnqo7aecl5ock"]
+
+[ext_resource type="PackedScene" uid="uid://ip43u313r6bh" path="res://Scenes/Items/fuse_view.tscn" id="1_8iou4"]
+[ext_resource type="Texture2D" uid="uid://banepu3p47u4s" path="res://Assets/Texturelabs_Metal_232S.jpg" id="1_cik6h"]
+[ext_resource type="AudioStream" uid="uid://c5367txuaj2k4" path="res://Assets/Sounds/623712__mediatheksuche__switching_a_rattling_lever_with_room_ambience.wav" id="2_n7d8a"]
+[ext_resource type="AudioStream" uid="uid://bdv4s8bpjebep" path="res://Assets/Sounds/soundreality-sound-of-mouse-click-4-478760.wav" id="3_agvae"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8iou4"]
+albedo_color = Color(0.24115604, 0.24115604, 0.24115604, 1)
+albedo_texture = ExtResource("1_cik6h")
+
+[sub_resource type="GDScript" id="GDScript_t1l5v"]
+script/source = "extends CSGBox3D
+
+var energy_restored : bool = false
+@onready var mvp_level: Node3D = $\"../..\"
+
+func run_anim():
+	await mvp_level.energy_restored()
+"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_t1l5v"]
+albedo_color = Color(0.50928617, 0.50928617, 0.50928617, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u0pra"]
+albedo_color = Color(0.99999994, 0.22953573, 0.17418528, 1)
+uv1_scale = Vector3(1.265, 4.655, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xbeu7"]
+albedo_color = Color(0.57925385, 1.973361e-06, 3.85046e-07, 1)
+emission_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_alcpj"]
+albedo_color = Color(0.6784314, 0.6156863, 0, 1)
+
+[sub_resource type="GDScript" id="GDScript_8iou4"]
+resource_name = "energy_box"
+script/source = "extends StaticBody3D
+
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var camera_3d: Camera3D = $Camera3D
+@onready var audio_stream_player_3d: AudioStreamPlayer3D = $\"../AudioStreamPlayer3D\"
+@onready var audio_stream_player_3d_2: AudioStreamPlayer3D = $\"../AudioStreamPlayer3D2\"
+
+var has_fuse : bool = false
+
+func _ready() -> void:
+	self.add_to_group(\"Interactable\")
+
+func anim_handler(player):
+	camera_3d.current = true
+	if !GameManager.is_on_past:
+		if GameManager.has_fuse and !has_fuse:
+			if player.held_item != null:
+				player.held_items[player.held_item.item_id].visible = false
+				player.held_item.queue_free()
+			
+			animation_player.play(\"insert_fuse\")
+			player.locked_controls = true
+			player.crosshair.visible = false
+			has_fuse = true
+			await get_tree().create_timer(0.8).timeout
+			audio_stream_player_3d_2.play(0.2)
+			await get_tree().create_timer(1.2).timeout
+			player.locked_controls = false
+			camera_3d.current = false
+			player.crosshair.visible = true
+			return
+		if !GameManager.has_energy and has_fuse:
+			player.crosshair.visible = false
+			animation_player.play(\"pull_crank\")
+			audio_stream_player_3d.play()
+			player.locked_controls = true
+			GameManager.has_energy = true
+			self.remove_from_group(\"Interactable\")
+			await get_tree().create_timer(3).timeout
+			player.locked_controls = false
+			self.get_parent().energy_restored = true
+			await self.get_parent().run_anim()
+		player.crosshair.visible = true
+		camera_3d.current = false
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8iou4"]
+size = Vector3(1, 1.6, 0.6)
+
+[sub_resource type="Animation" id="Animation_alcpj"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("FuseView:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.016084075, -0.5923819, 0.82118154)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("FuseView:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CSGCylinder3D4/CSGSphere3D:material:emission")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0, 0, 0, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("CSGCylinder3D4/CSGSphere3D:material:emission_energy_multiplier")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [1.0]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("CSGCylinder3D3:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.0076018125, 0.25192586, 0.17997977)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("CSGCylinder3D4/CSGSphere3D:material:albedo_color")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0.57925385, 1.973361e-06, 3.85046e-07, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_8akc3"]
+resource_name = "insert_fuse"
+length = 2.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("FuseView:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(-0.016084075, -0.5923819, 0.82118154), Vector3(-0.016084075, -0.5923819, 0.12118155)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("FuseView:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CSGCylinder3D4/CSGSphere3D:material:emission")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.06666667, 1, 1.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 1), Color(0, 0, 0, 1), Color(0.5411765, 0, 0, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("CSGCylinder3D4/CSGSphere3D:material:emission_energy_multiplier")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(1.5666667, 1.7, 1.8666667, 2),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [1.0, 2.0, 1.0, 2.0]
+}
+
+[sub_resource type="Animation" id="Animation_8iou4"]
+resource_name = "pull_crank"
+length = 3.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CSGCylinder3D3:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.0076018125, 0.25192586, 0.17997977), Vector3(0.0076018125, -0.24807414, 0.17997977), Vector3(0.0076018125, 0.25192586, 0.17997977)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CSGCylinder3D4/CSGSphere3D:material:albedo_color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(1, 1.7666667),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.49259317, 0, 0.05088994, 1), Color(0, 0.4540496, 0.17364791, 1)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CSGCylinder3D4/CSGSphere3D:material:emission")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(1, 1.7666667),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.5411765, 0, 0, 1), Color(9.3854965e-07, 0.5428058, 0.14333934, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("CSGCylinder3D4/CSGSphere3D:material:emission_energy_multiplier")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(1.9, 2.1, 2.3333333, 2.5333333, 2.7333333, 2.9666667),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [1.0, 2.0, 1.0, 2.0, 1.0, 2.0]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("FuseView:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.016084075, -0.5923819, 0.12118155)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_7jufh"]
+_data = {
+&"RESET": SubResource("Animation_alcpj"),
+&"insert_fuse": SubResource("Animation_8akc3"),
+&"pull_crank": SubResource("Animation_8iou4")
+}
+
+[node name="energy_box" type="CSGBox3D" unique_id=450319057]
+size = Vector3(1, 1.5, 0.5)
+material = SubResource("StandardMaterial3D_8iou4")
+script = SubResource("GDScript_t1l5v")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=1736709621]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.19070524)
+operation = 2
+size = Vector3(0.9, 1.45, 0.5)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="." unique_id=382797955]
+size = Vector3(0.9, 0.8, 0.2)
+material = SubResource("StandardMaterial3D_8iou4")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="." unique_id=1600559497]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11701095, 0, 0.09293558)
+radius = 0.03
+height = 0.5
+material = SubResource("StandardMaterial3D_t1l5v")
+
+[node name="CSGCylinder3D3" type="CSGCylinder3D" parent="." unique_id=1498623138]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0.0076018125, 0.25192586, 0.17997977)
+radius = 0.03
+height = 0.5
+material = SubResource("StandardMaterial3D_u0pra")
+
+[node name="CSGCylinder3D2" type="CSGCylinder3D" parent="." unique_id=952812365]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.123367965, 0, 0.09293558)
+radius = 0.03
+height = 0.5
+material = SubResource("StandardMaterial3D_t1l5v")
+
+[node name="CSGCylinder3D4" type="CSGCylinder3D" parent="." unique_id=1919119960]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.27477664, 0.566241, 0)
+radius = 0.1
+height = 0.05
+sides = 12
+material = SubResource("StandardMaterial3D_t1l5v")
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="CSGCylinder3D4" unique_id=1987581742]
+radius = 0.085
+material = SubResource("StandardMaterial3D_xbeu7")
+
+[node name="CSGCylinder3D5" type="CSGCylinder3D" parent="." unique_id=1925205469]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0.13265297, 0.566241, 0)
+radius = 0.1
+height = 0.05
+sides = 12
+material = SubResource("StandardMaterial3D_t1l5v")
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="CSGCylinder3D5" unique_id=288910666]
+radius = 0.085
+material = SubResource("StandardMaterial3D_xbeu7")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="." unique_id=94425986]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.30007303, -0.5621231, 0.08183023)
+size = Vector3(0.01, 0.1, 0.2)
+material = SubResource("StandardMaterial3D_t1l5v")
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="." unique_id=1572779122]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -0.00015419722, -0.5621231, 0.027449489)
+size = Vector3(0.01, 0.1, 0.6)
+material = SubResource("StandardMaterial3D_t1l5v")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="." unique_id=203121680]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.29912302, -0.5621231, 0.08183023)
+size = Vector3(0.01, 0.1, 0.2)
+material = SubResource("StandardMaterial3D_t1l5v")
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="." unique_id=1176998715]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.5678429)
+visible = false
+size = Vector3(1, 1.5, 0.02)
+material = SubResource("StandardMaterial3D_8iou4")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="CSGBox3D6" unique_id=1054031716]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0.4005888, 0.08680627, 0)
+radius = 0.05
+height = 0.025
+sides = 5
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="CSGBox3D6/CSGCylinder3D" unique_id=1379251834]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.014583051, -7.450581e-09)
+operation = 2
+radius = 0.001
+height = 0.007
+sides = 3
+
+[node name="CSGCylinder3D2" type="CSGCylinder3D" parent="CSGBox3D6/CSGCylinder3D" unique_id=1791465825]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0.0007419288, 0.014583051, -0.0061512664)
+operation = 2
+radius = 0.001
+height = 0.007
+sides = 3
+
+[node name="CSGCylinder3D2" type="CSGCylinder3D" parent="CSGBox3D6" unique_id=900949121]
+transform = Transform3D(0.86470467, 1.2923438e-07, -0.5022806, -0.5022806, -1.2561897e-07, -0.86470467, -1.7484555e-07, 1, -4.371139e-08, -0.008881509, 0.28902897, 0)
+radius = 0.228
+height = 0.025
+sides = 3
+material = SubResource("StandardMaterial3D_alcpj")
+
+[node name="FuseView" parent="." unique_id=1944163727 instance=ExtResource("1_8iou4")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, -0.016084075, -0.5923819, 0.82118154)
+visible = false
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=700264629]
+script = SubResource("GDScript_8iou4")
+
+[node name="Camera3D" type="Camera3D" parent="StaticBody3D" unique_id=1022997793]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.2907)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1617351947]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.9604645e-08, 0)
+shape = SubResource("BoxShape3D_8iou4")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="StaticBody3D" unique_id=660332161]
+root_node = NodePath("../..")
+libraries/ = SubResource("AnimationLibrary_7jufh")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=291366716]
+stream = ExtResource("2_n7d8a")
+volume_db = -10.0
+
+[node name="AudioStreamPlayer3D2" type="AudioStreamPlayer3D" parent="." unique_id=1692759345]
+stream = ExtResource("3_agvae")
+volume_db = 20.0

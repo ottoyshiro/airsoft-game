@@ -1,0 +1,153 @@
+[gd_scene format=3 uid="uid://c2t26t33fxa8n"]
+
+[ext_resource type="Texture2D" uid="uid://banepu3p47u4s" path="res://Assets/Texturelabs_Metal_232S.jpg" id="1_7a4v6"]
+[ext_resource type="PackedScene" uid="uid://b00vssrshglky" path="res://Scenes/Items/gloves.tscn" id="2_imhc6"]
+[ext_resource type="AudioStream" uid="uid://gngxbhcygrlo" path="res://Assets/Sounds/403898__watercool__upvc_door_opening_and_closing.wav" id="3_i3dad"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_imhc6"]
+albedo_color = Color(0.7162962, 0.7162962, 0.7162962, 1)
+albedo_texture = ExtResource("1_7a4v6")
+uv1_scale = Vector3(-0.185, 0.825, 1.25)
+
+[sub_resource type="GDScript" id="GDScript_imhc6"]
+resource_name = "cabinet_door"
+script/source = "extends StaticBody3D
+
+@onready var animation_player: AnimationPlayer = $\"../../../AnimationPlayer\"
+@onready var audio_stream_player_3d: AudioStreamPlayer3D = $\"../../../AudioStreamPlayer3D\"
+
+var is_open : bool = false
+
+func open(player):
+	if GameManager.has_cabinet_key and GameManager.is_on_past:
+		animation_player.play(\"open\")
+		audio_stream_player_3d.play()
+		await get_tree().create_timer(1.5).timeout
+		audio_stream_player_3d.stop()
+		is_open = true
+	elif GameManager.has_cabinet_key and !GameManager.is_on_past:
+		player.feedback.exibir_texto_digitado(\"The key won't open it, it's rusty\")
+
+func close(player):
+	if GameManager.has_cabinet_key and GameManager.is_on_past:
+		animation_player.play_backwards(\"open\")
+		audio_stream_player_3d.play(1.5)
+		await get_tree().create_timer(1.5).timeout
+		audio_stream_player_3d.stop()
+		is_open = false
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_imhc6"]
+size = Vector3(2.8984375, 0.09030151, 0.80482674)
+
+[sub_resource type="Animation" id="Animation_6ogna"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("pivot:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("pivot/CSGBox3D2/StaticBody3D:collision_layer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+
+[sub_resource type="Animation" id="Animation_i6gei"]
+resource_name = "open"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("pivot:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, -1.5707964, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("pivot/CSGBox3D2/StaticBody3D:collision_layer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.9, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [8, 8, 1]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4e4eg"]
+_data = {
+&"RESET": SubResource("Animation_6ogna"),
+&"open": SubResource("Animation_i6gei")
+}
+
+[node name="Cabinet" type="Node3D" unique_id=1710808978]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=244350674]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -0.54999995, 0, 2.4041261e-08)
+use_collision = true
+size = Vector3(1, 3, 0.90000004)
+material = SubResource("StandardMaterial3D_imhc6")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="CSGBox3D" unique_id=625858271]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.04999999, 0.05000007, 0.0029876232)
+operation = 2
+use_collision = true
+size = Vector3(0.90000004, 2.7, 0.78737795)
+material = SubResource("StandardMaterial3D_imhc6")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="." unique_id=1687831248]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -0.5363733, -0.35000002, 0.02563479)
+use_collision = true
+size = Vector3(0.94873047, 0.1, 0.788147)
+material = SubResource("StandardMaterial3D_imhc6")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="." unique_id=399049316]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -0.5609034, 0.55, 0.033935573)
+use_collision = true
+size = Vector3(0.9321289, 0.1, 0.7535645)
+material = SubResource("StandardMaterial3D_imhc6")
+
+[node name="pivot" type="Node3D" parent="." unique_id=557071458]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.94875294, 0, 0.47776133)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="pivot" unique_id=1487834825]
+transform = Transform3D(-4.371139e-08, 0, 1, 1, -4.371139e-08, 4.371139e-08, 4.371139e-08, 1, 1.9106855e-15, 0.401246, -0.008154417, 0.079197705)
+size = Vector3(2.9163086, 0.1, 0.8366455)
+material = SubResource("StandardMaterial3D_imhc6")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="pivot/CSGBox3D2" unique_id=1685976075 groups=["Interactable"]]
+transform = Transform3D(1, 0, 8.351872e-23, 0, 1, 0, 8.351872e-23, 0, 1, 1.7695129e-08, 0, -0.40759355)
+script = SubResource("GDScript_imhc6")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="pivot/CSGBox3D2/StaticBody3D" unique_id=998935192]
+transform = Transform3D(1, 0, 8.351872e-23, 0, 1, 0, 8.351872e-23, 0, 1, 0.010742173, 0.027175903, 0.43285358)
+shape = SubResource("BoxShape3D_imhc6")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=184536588]
+libraries/ = SubResource("AnimationLibrary_4e4eg")
+
+[node name="Gloves" parent="." unique_id=1780637799 instance=ExtResource("2_imhc6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45014867, -0.29823112, 0)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=1371964251]
+stream = ExtResource("3_i3dad")

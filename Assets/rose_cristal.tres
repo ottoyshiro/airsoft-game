@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://sw8w0h87so4"]
+
+[ext_resource type="Texture2D" uid="uid://banepu3p47u4s" path="res://Assets/Texturelabs_Metal_232S.jpg" id="1_dth2p"]
+
+[resource]
+albedo_color = Color(0.62579274, 0.42060375, 0.4953001, 1)
+albedo_texture = ExtResource("1_dth2p")
+emission_enabled = true
+emission = Color(0.5921217, 0.2123312, 0.23790672, 1)
+emission_energy_multiplier = 7.0

@@ -1,0 +1,294 @@
+[gd_scene format=3 uid="uid://c3o7mwlyvpy2u"]
+
+[ext_resource type="Script" uid="uid://bv58gn61fhurs" path="res://Terminal/key_lock.gd" id="1_mwyaa"]
+[ext_resource type="Script" uid="uid://kgj2orrvynpi" path="res://Terminal/display.gd" id="2_pe7tm"]
+[ext_resource type="PackedScene" uid="uid://b5fkxlxdwx7jt" path="res://Terminal/button.tscn" id="3_f4a4y"]
+[ext_resource type="AudioStream" uid="uid://7u6symkf0ps" path="res://Assets/Sounds/mixkit-intense-electricity-hum-2591.wav" id="4_l2q5c"]
+[ext_resource type="Material" uid="uid://budgwu1uc7vby" path="res://Assets/Materials/Terminal/red_light.tres" id="4_oaf24"]
+[ext_resource type="AudioStream" uid="uid://cnsq1248liyuw" path="res://Assets/Sounds/mixkit-correct-answer-notification-947.wav" id="5_gm01s"]
+
+[sub_resource type="GDScript" id="GDScript_mwyaa"]
+resource_name = "terminal"
+script/source = "extends StaticBody3D
+
+@onready var camera_3d: Camera3D = $\"../Camera3D\"
+@onready var display: CSGBox3D = $\"../CSGBox3D/display\"
+
+var on_display : bool = false
+var player = null
+
+func _ready() -> void:
+	camera_3d.current = false
+
+func set_player(player):
+	display.player = player
+
+func anim_handler_terminal(player):
+	set_player(player)
+	player.camera.current = false
+	self.camera_3d.current = true
+	#camera_3d.visible = true
+	self.input_ray_pickable = false
+	on_display = true
+	player.locked_controls = true
+	player.crosshair.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	player.mouse_view = true
+
+func exit(player):
+		player.locked_controls = false
+		player.crosshair.visible = true
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		self.camera_3d.current = false
+		self.on_display = false
+		player.mouse_view = false
+		await get_tree().create_timer(0.5).timeout
+		#self.remove_from_group(\"Interactable\")
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mwyaa"]
+size = Vector3(1, 1.272583, 0.250309)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f4a4y"]
+albedo_color = Color(0.29579705, 0.29579705, 0.29579702, 0.627451)
+metallic = 0.5
+roughness = 0.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_12oir"]
+transparency = 1
+albedo_color = Color(0.41751167, 0.43184876, 0.42183384, 1)
+albedo_texture_msdf = true
+metallic = 0.7
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.021205537, 0.053739928, 0.045886405, 1)
+emission_energy_multiplier = 5.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_se5bu"]
+albedo_color = Color(0.97988373, 0.97988385, 0.97988373, 1)
+emission_enabled = true
+emission = Color(0.66638285, 0.6796956, 0.56980604, 1)
+emission_energy_multiplier = 5.0
+
+[sub_resource type="TextMesh" id="TextMesh_05q15"]
+material = SubResource("StandardMaterial3D_se5bu")
+text = "Enter the code
+and card"
+font_size = 10
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_se5bu"]
+size = Vector3(1.623169, 2.2891235, 1.7872314)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_f4a4y"]
+top_radius = 0.05
+bottom_radius = 0.04
+height = 0.1
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_se5bu"]
+material = ExtResource("4_oaf24")
+radius = 0.03
+height = 0.1
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_0f0tl"]
+material = ExtResource("4_oaf24")
+radius = 0.03
+height = 0.1
+
+[sub_resource type="Animation" id="Animation_f4a4y"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance3D2:mesh:material:emission_energy_multiplier")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [9.0]
+}
+
+[sub_resource type="Animation" id="Animation_se5bu"]
+resource_name = "red_light"
+length = 0.8
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance3D2:mesh:material:emission_energy_multiplier")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [9.0, 2.0, 9.0, 2.0, 9.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_0f0tl"]
+_data = {
+&"RESET": SubResource("Animation_f4a4y"),
+&"code_light": SubResource("Animation_se5bu")
+}
+
+[sub_resource type="Animation" id="Animation_3t51i"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance3D4:mesh:material:emission_energy_multiplier")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [9.0]
+}
+
+[sub_resource type="Animation" id="Animation_xf3fv"]
+resource_name = "card_light"
+length = 0.8
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance3D4:mesh:material:emission_energy_multiplier")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [9.0, 2.0, 9.0, 2.0, 9.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_707mu"]
+_data = {
+&"RESET": SubResource("Animation_3t51i"),
+&"card_light": SubResource("Animation_xf3fv")
+}
+
+[node name="key_lock" type="Node3D" unique_id=2046446654]
+script = ExtResource("1_mwyaa")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=722768839 groups=["Interactable"]]
+script = SubResource("GDScript_mwyaa")
+
+[node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1179134048]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0063476563, 0.76987654, 0.03256926)
+shape = SubResource("BoxShape3D_mwyaa")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=268279615]
+transform = Transform3D(1, 0, 0, 0, 1.5943676, 0, 0, 0, 0.18233043, 0.0063476563, 0.7703004, 0)
+use_collision = true
+size = Vector3(1.0126953, 0.79833984, 1)
+material = SubResource("StandardMaterial3D_f4a4y")
+
+[node name="display" type="CSGBox3D" parent="CSGBox3D" unique_id=803688454]
+transform = Transform3D(0.79011315, 0, 0, 0, 0.30941206, 0, 0, 0, 0.18233043, 0, 0.25944567, 0.52557486)
+use_collision = true
+size = Vector3(0.95, 0.558, 1)
+material = SubResource("StandardMaterial3D_12oir")
+script = ExtResource("2_pe7tm")
+
+[node name="text" type="MeshInstance3D" parent="CSGBox3D/display" unique_id=456926412]
+transform = Transform3D(1, 0, 0, 0, 1.2932253, 0, 0, 0, 1.0000002, 0, 0, 0.6805427)
+mesh = SubResource("TextMesh_05q15")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=475021827]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8290328, 2.2907262)
+doppler_tracking = 1
+projection = 1
+size = 0.7152973
+near = 0.697
+
+[node name="interactable_area" type="Area3D" parent="." unique_id=628844591]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8502469, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="interactable_area" unique_id=207043486]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.059143066, -0.013580322, 0.39361572)
+shape = SubResource("BoxShape3D_se5bu")
+debug_color = Color(0, 0.6, 0.69803923, 0)
+
+[node name="buttons" type="Node3D" parent="." unique_id=2072273558]
+
+[node name="button" parent="buttons" unique_id=224080531 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.27152258, 0.915, 0.1)
+number = "1"
+
+[node name="button2" parent="buttons" unique_id=869894891 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.915, 0.1)
+number = "2"
+
+[node name="button3" parent="buttons" unique_id=703634728 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0.2708764, 0.915, 0.1)
+number = "3"
+
+[node name="button4" parent="buttons" unique_id=2112515881 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.27152258, 0.698, 0.1)
+number = "4"
+
+[node name="button5" parent="buttons" unique_id=290066629 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.698, 0.1)
+number = "5"
+
+[node name="button6" parent="buttons" unique_id=1600098001 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0.2708764, 0.698, 0.1)
+number = "6"
+
+[node name="button7" parent="buttons" unique_id=656143567 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.27152258, 0.481, 0.1)
+number = "7"
+
+[node name="button8" parent="buttons" unique_id=1722941808 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.481, 0.1)
+number = "8"
+
+[node name="button9" parent="buttons" unique_id=1464456098 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0.2708764, 0.481, 0.1)
+number = "9"
+
+[node name="button10" parent="buttons" unique_id=2038207401 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.27152258, 0.264, 0.1)
+number = "del"
+
+[node name="button11" parent="buttons" unique_id=445759594 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.264, 0.1)
+number = "0"
+
+[node name="button12" parent="buttons" unique_id=1923639791 instance=ExtResource("3_f4a4y")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0.2708764, 0.264, 0.1)
+number = "ok"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2136794391]
+transform = Transform3D(1.9106855e-15, -4.371139e-08, 1, -1, -4.371139e-08, 0, 4.371139e-08, -1, -4.371139e-08, 0.4486186, 1.2628561, 0.04323715)
+mesh = SubResource("CylinderMesh_f4a4y")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=517134855]
+transform = Transform3D(1.9106855e-15, -4.371139e-08, 1, -1, -4.371139e-08, 0, 4.371139e-08, -1, -4.371139e-08, 0.44845468, 1.263704, 0.07846014)
+mesh = SubResource("CapsuleMesh_se5bu")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="." unique_id=1234380435]
+transform = Transform3D(1.9106855e-15, -4.371139e-08, 1, -1, -4.371139e-08, 0, 4.371139e-08, -1, -4.371139e-08, 0.44862145, 1.119334, 0.04323715)
+mesh = SubResource("CylinderMesh_f4a4y")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="." unique_id=794197980]
+transform = Transform3D(1.9106855e-15, -4.371139e-08, 1, -1, -4.371139e-08, 0, 4.371139e-08, -1, -4.371139e-08, 0.44845754, 1.1201818, 0.07846014)
+mesh = SubResource("CapsuleMesh_0f0tl")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1688642340]
+libraries/ = SubResource("AnimationLibrary_0f0tl")
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=1477818183]
+libraries/ = SubResource("AnimationLibrary_707mu")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=2047317043]
+stream = ExtResource("4_l2q5c")
+volume_db = -24.06
+
+[node name="AudioStreamPlayer3D2" type="AudioStreamPlayer3D" parent="." unique_id=442667668]
+stream = ExtResource("5_gm01s")
+volume_db = -24.06
+
+[connection signal="body_entered" from="interactable_area" to="." method="device_area"]
+[connection signal="body_exited" from="interactable_area" to="." method="out_of_range"]

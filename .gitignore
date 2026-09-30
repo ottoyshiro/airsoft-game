@@ -1,0 +1,21 @@
+# Ignorar arquivos de importação automática do Godot 4.x
+.godot/
+
+# Ignorar arquivos de importação automática do Godot 3.x
+.import/
+
+# Ignorar o cache de builds de exportação (.exe, .apk, .html, etc)
+export_presets.cfg
+build/
+dist/
+
+# Ignorar arquivos específicos do Mono/C# (se você usar C#)
+.mono/
+*.csproj
+*.sln
+.vs/
+
+# Ignorar arquivos do sistema ou do editor de texto
+.DS_Store
+Thumbs.db
+.vscode/

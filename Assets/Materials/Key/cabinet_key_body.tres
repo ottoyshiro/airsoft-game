@@ -1,0 +1,15 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://b3o7g6menw42v"]
+
+[ext_resource type="Texture2D" uid="uid://dfwdvlyyn1a2s" path="res://Assets/10500040.jpg" id="1_4nkb4"]
+
+[resource]
+transparency = 3
+alpha_hash_scale = 1.0
+alpha_antialiasing_mode = 0
+albedo_texture = ExtResource("1_4nkb4")
+metallic = 1.0
+roughness = 0.0
+emission_enabled = true
+emission_energy_multiplier = 2.0
+uv1_scale = Vector3(1, 0.94, 1)
+uv1_offset = Vector3(0.26, 0, 0)

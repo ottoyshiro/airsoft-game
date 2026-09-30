@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://dnm0smf3xb0t3"]
+
+[ext_resource type="Texture2D" uid="uid://dfwdvlyyn1a2s" path="res://Assets/10500040.jpg" id="1_siex6"]
+
+[resource]
+transparency = 1
+albedo_color = Color(0.5357235, 0.0038508452, 0.9770817, 1)
+albedo_texture = ExtResource("1_siex6")

@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://csyd6jt4rljm7"]
+
+[ext_resource type="Texture2D" uid="uid://banepu3p47u4s" path="res://Assets/Texturelabs_Metal_232S.jpg" id="1_5sadf"]
+
+[resource]
+albedo_color = Color(0, 0.3923075, 0.3948971, 1)
+albedo_texture = ExtResource("1_5sadf")
+roughness = 0.0

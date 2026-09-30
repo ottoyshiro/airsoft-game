@@ -1,0 +1,60 @@
+[gd_scene format=3 uid="uid://5w0bwjx4f4uj"]
+
+[ext_resource type="Texture2D" uid="uid://banepu3p47u4s" path="res://Assets/Texturelabs_Metal_232S.jpg" id="1_2ufye"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j1ux3"]
+albedo_color = Color(0.64456964, 0, 0.046478264, 1)
+albedo_texture = ExtResource("1_2ufye")
+uv1_scale = Vector3(4.71, 0.865, 1.16)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5v0dh"]
+albedo_color = Color(0.47007585, 0.47007585, 0.47007585, 1)
+albedo_texture = ExtResource("1_2ufye")
+metallic = 0.45
+roughness = 0.8
+uv1_scale = Vector3(1, 1.48, 1)
+uv1_offset = Vector3(0.055, 0.75, 0)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2ufye"]
+size = Vector3(0.80578613, 0.5098877, 0.6959839)
+
+[node name="valve" type="CSGTorus3D" unique_id=1697755505]
+inner_radius = 0.414
+outer_radius = 0.3
+sides = 6
+smooth_faces = false
+material = SubResource("StandardMaterial3D_j1ux3")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="." unique_id=1879476328]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, -0.012745827, 0)
+radius = 0.05
+height = 0.575
+sides = 6
+material = SubResource("StandardMaterial3D_j1ux3")
+
+[node name="CSGCylinder3D2" type="CSGCylinder3D" parent="." unique_id=1016456602]
+transform = Transform3D(-4.371139e-08, 1, -4.371139e-08, 0, -4.371139e-08, -1, -1, -4.371139e-08, 1.9106855e-15, 0, -0.0071050525, 0)
+radius = 0.05
+height = 0.695
+sides = 6
+material = SubResource("StandardMaterial3D_j1ux3")
+
+[node name="CSGCylinder3D3" type="CSGCylinder3D" parent="." unique_id=1312394973]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2980265, 0)
+radius = 0.2
+height = 0.316
+sides = 12
+material = SubResource("StandardMaterial3D_5v0dh")
+
+[node name="CSGCylinder3D4" type="CSGCylinder3D" parent="." unique_id=2070871897]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14722878, 0)
+radius = 0.055
+height = 0.371
+sides = 12
+material = SubResource("StandardMaterial3D_5v0dh")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1830623440]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=646148098]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00579834, -0.19781494, -0.0024719238)
+shape = SubResource("BoxShape3D_2ufye")

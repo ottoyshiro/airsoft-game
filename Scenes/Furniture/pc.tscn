@@ -1,0 +1,466 @@
+[gd_scene format=3 uid="uid://b3qsh0gcj42f3"]
+
+[ext_resource type="Material" uid="uid://c2jd7nqoy0fjt" path="res://Assets/Materials/PC/pc_texture.tres" id="1_7ddtu"]
+[ext_resource type="Texture2D" uid="uid://dj5skguh3trqh" path="res://Assets/Images/bd764bb25d49a05105060185774ba14cd2c846f7.jpg" id="1_cyams"]
+[ext_resource type="Texture2D" uid="uid://banepu3p47u4s" path="res://Assets/Texturelabs_Metal_232S.jpg" id="2_ndlf7"]
+[ext_resource type="Animation" uid="uid://m2an431eny0v" path="res://Assets/Animations/energy_restored.res" id="3_038xg"]
+[ext_resource type="Shader" uid="uid://bom2l3uppib8w" path="res://Scripts/player.gdshader" id="3_80rcu"]
+[ext_resource type="Texture2D" uid="uid://dc3p8absrnokq" path="res://Assets/Images/458595.png" id="3_cyams"]
+[ext_resource type="Texture2D" uid="uid://dnjdduah3jt5g" path="res://Assets/Images/folder_image.png" id="3_ndlf7"]
+[ext_resource type="FontFile" uid="uid://c3xmoq3uc514" path="res://Assets/Fonts/PixelifySans-VariableFont_wght.ttf" id="4_87uhg"]
+[ext_resource type="AudioStream" uid="uid://bdv4s8bpjebep" path="res://Assets/Sounds/soundreality-sound-of-mouse-click-4-478760.wav" id="10_140lf"]
+[ext_resource type="Texture2D" uid="uid://dt04cd2a21bvw" path="res://Assets/Images/Windows Turn Off.png" id="10_v6br0"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_cyams"]
+size = Vector2(1.15, 0.72)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_80rcu"]
+albedo_color = Color(0.14767182, 0.14767179, 0.14767179, 1)
+albedo_texture = ExtResource("2_ndlf7")
+
+[sub_resource type="GDScript" id="GDScript_x3dnt"]
+resource_name = "pc"
+script/source = "extends StaticBody3D
+
+@onready var animation_player: AnimationPlayer = $\"../AnimationPlayer\"
+@onready var camera_3d: Camera3D = $\"../Camera3D\"
+@onready var control: Control = $\"../Control\"
+@onready var mesh_instance_3d: MeshInstance3D = $\"../MeshInstance3D\"
+#@onready var audio_stream_player_3d: AudioStreamPlayer3D = $\"../AudioStreamPlayer3D\"
+
+var pc_texture = preload(\"res://Assets/Images/bd764bb25d49a05105060185774ba14cd2c846f7.jpg\")
+var material_screen = null
+var player = null
+
+func _ready() -> void:
+	material_screen = mesh_instance_3d.get_surface_override_material(0)
+	if !GameManager.is_on_past:
+		material_screen.albedo_texture = null
+		#material_screen.albedo_color = Color(0,0,0)
+		self.remove_from_group(\"Interactable\")
+	else:
+		self.add_to_group(\"Interactable\")
+		material_screen.albedo_texture = pc_texture
+		#material_screen.albedo_color = Color(255, 255, 255)
+	control.visible = false
+
+func _process(_delta: float) -> void:
+	material_screen = mesh_instance_3d.get_surface_override_material(0)
+	if GameManager.has_energy and !GameManager.is_on_past:
+		self.add_to_group(\"Interactable\")
+		material_screen.albedo_texture = pc_texture
+		#material_screen.albedo_color = Color(255, 255, 255)
+	elif !GameManager.has_energy and !GameManager.is_on_past:
+		self.remove_from_group(\"Interactable\")
+		material_screen.albedo_texture = null
+	elif GameManager.is_on_past:
+		self.add_to_group(\"Interactable\")
+		material_screen.albedo_texture = pc_texture
+		#material_screen.albedo_color = Color(255, 255, 255)
+
+
+func acess_pc(player):
+	self.player = player
+	player.locked_controls = true
+	camera_3d.current = true
+	if player.held_item != null:
+		player.held_items[player.held_item.item_id].visible = false
+	animation_player.play(\"acess_pc\")
+	await get_tree().create_timer(1).timeout
+	player.crosshair.visible = false
+	control.visible = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	Input.set_custom_mouse_cursor(preload(\"res://Assets/Images/cursor.png\"))
+	player.mouse_view = true
+	player.texture.material.set_shader_parameter(
+		\"quantize_size\",
+		 1)
+
+func access_pc_present(player):
+	if !GameManager.is_on_past and GameManager.has_energy:
+		acess_pc(player)
+
+func exit_pc(player):
+	player.locked_controls = false
+	camera_3d.current = false
+	if player.held_item != null:
+		player.held_items[player.held_item.item_id].visible = true
+	player.crosshair.visible = true
+	control.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	Input.set_custom_mouse_cursor(null)
+	player.mouse_view = false
+	player.texture.material.set_shader_parameter(
+		\"quantize_size\",
+		 3)
+
+
+func _on_button_pressed() -> void:
+	exit_pc(player)
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ndlf7"]
+size = Vector3(1.2, 0.8, 0.1)
+
+[sub_resource type="Animation" id="Animation_vdjpl"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Camera3D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, -0.8961896)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Camera3D:size")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [1.4277403]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("MeshInstance3D:surface_material_override/0")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_7ddtu")]
+}
+
+[sub_resource type="Animation" id="Animation_touer"]
+resource_name = "acess_pc"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Camera3D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(),
+"transitions": PackedFloat32Array(),
+"update": 0,
+"values": []
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Camera3D:size")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [1.4277403, 0.57253706]
+}
+
+[sub_resource type="Animation" id="Animation_038xg"]
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cyams"]
+_data = {
+&"RESET": SubResource("Animation_vdjpl"),
+&"acess_pc": SubResource("Animation_touer"),
+&"energy_restored": ExtResource("3_038xg"),
+&"pc_anim": SubResource("Animation_038xg")
+}
+
+[sub_resource type="GDScript" id="GDScript_cyams"]
+resource_name = "pc_control"
+script/source = "extends Control
+
+@onready var button_doc: Button = $HBoxContainer/VBoxContainer/ButtonDoc
+@onready var button_pass: Button = $HBoxContainer/VBoxContainer2/ButtonPass
+@onready var panel_container: PanelContainer = $PanelContainer
+@onready var x_button: TextureButton = $TextureButton
+@onready var panel_container_text: RichTextLabel = $PanelContainer/HBoxContainer/MarginContainer/RichTextLabel2
+@onready var button_new_pass: Button = $HBoxContainer/VBoxContainer3/ButtonNewPass
+@onready var v_box_container_3: VBoxContainer = $HBoxContainer/VBoxContainer3
+#@onready var audio_stream_player_3d: AudioStreamPlayer3D = $\"../AudioStreamPlayer3D\"
+
+var password = \"\"
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(_delta: float) -> void:
+	if !GameManager.is_on_past and GameManager.has_energy:
+		v_box_container_3.visible = true
+	else:
+		v_box_container_3.visible = false
+
+
+func _on_x_button_pressed() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	panel_container.visible = false
+	x_button.disabled = true
+	x_button.visible = false
+
+#fazer a funcao para o app de senha que vai abrir o armario
+func _on_button_doc_pressed() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	panel_container.visible = true
+	x_button.disabled = false
+	x_button.visible = true
+	panel_container_text.text = \"[center]Documents[/center]
+
+Section 
+_ _ _ E\"
+
+
+func _on_button_pass_pressed() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	panel_container.visible = true
+	x_button.disabled = false
+	x_button.visible = true
+	panel_container_text.text = \"[center]Password[/center]
+
+Changes in the password
+Sorry for that, but we have to change the panel password, I hope you don't lock yourself in the room...
+We'll send the new password in a few minutes.\"
+
+
+func _on_button_new_pass_pressed() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	panel_container.visible = true
+	x_button.disabled = false
+	x_button.visible = true
+	panel_container_text.text = \"[center]Password[/center]
+
+We really sorry for that.
+Here's the new PASSWORD: {password}\".format({\"password\":password})
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_87uhg"]
+shader = ExtResource("3_80rcu")
+shader_parameter/texture_mode = 0
+shader_parameter/quantize_size = 8
+shader_parameter/snap_to_world = false
+shader_parameter/limit_subpixels = true
+
+[node name="pc" type="Node3D" unique_id=1029331592]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1448475174]
+transform = Transform3D(-1, -3.821371e-15, 8.742278e-08, -8.742278e-08, 4.371139e-08, -1, 0, -1, -4.371139e-08, 0, -0.162, -0.125)
+mesh = SubResource("PlaneMesh_cyams")
+surface_material_override/0 = ExtResource("1_7ddtu")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="." unique_id=1630751727]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.153, -0.116)
+use_collision = true
+size = Vector3(1.2, 0.8, 0.068554685)
+material = SubResource("StandardMaterial3D_80rcu")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="CSGBox3D2" unique_id=317908297]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, -0.103)
+operation = 2
+size = Vector3(1.0942383, 0.6906494, 0.2)
+material = SubResource("StandardMaterial3D_80rcu")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=883955391 groups=["Interactable"]]
+script = SubResource("GDScript_x3dnt")
+
+[node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1533283406]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.153, -0.132)
+shape = SubResource("BoxShape3D_ndlf7")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=118186378]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0, -0.8961896)
+projection = 1
+size = 1.4277403
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=305459191]
+libraries/ = SubResource("AnimationLibrary_cyams")
+
+[node name="Control" type="Control" parent="." unique_id=597011400]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_cyams")
+
+[node name="TextureRect" type="TextureRect" parent="Control" unique_id=1125611287]
+material = SubResource("ShaderMaterial_87uhg")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_cyams")
+expand_mode = 1
+
+[node name="PanelContainer" type="PanelContainer" parent="Control" unique_id=51731112]
+visible = false
+z_index = 1
+custom_minimum_size = Vector2(650, 400)
+layout_mode = 0
+offset_left = 262.0
+offset_top = 117.0
+offset_right = 912.0
+offset_bottom = 548.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/PanelContainer" unique_id=401787078]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/PanelContainer/HBoxContainer" unique_id=2140568544]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="Control/PanelContainer/HBoxContainer/MarginContainer" unique_id=976426241]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+theme_override_fonts/normal_font = ExtResource("4_87uhg")
+bbcode_enabled = true
+fit_content = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control" unique_id=826954110]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 40.0
+offset_top = -257.0
+offset_right = 674.0
+offset_bottom = -63.0
+grow_vertical = 2
+theme_override_constants/separation = 33
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/HBoxContainer" unique_id=1781257136]
+layout_mode = 2
+
+[node name="ButtonDoc" type="Button" parent="Control/HBoxContainer/VBoxContainer" unique_id=2068559379]
+material = SubResource("ShaderMaterial_87uhg")
+layout_mode = 2
+theme_override_constants/icon_max_width = 67
+icon = ExtResource("3_ndlf7")
+flat = true
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Control/HBoxContainer/VBoxContainer" unique_id=338720174]
+layout_mode = 2
+theme_override_fonts/normal_font = ExtResource("4_87uhg")
+theme_override_font_sizes/normal_font_size = 13
+bbcode_enabled = true
+text = "[center]Documents[/center]
+"
+fit_content = true
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="Control/HBoxContainer" unique_id=2059600286]
+layout_mode = 2
+
+[node name="ButtonPass" type="Button" parent="Control/HBoxContainer/VBoxContainer2" unique_id=1151216299]
+material = SubResource("ShaderMaterial_87uhg")
+layout_mode = 2
+theme_override_constants/icon_max_width = 67
+icon = ExtResource("3_ndlf7")
+flat = true
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Control/HBoxContainer/VBoxContainer2" unique_id=1025328803]
+layout_mode = 2
+theme_override_fonts/normal_font = ExtResource("4_87uhg")
+theme_override_font_sizes/normal_font_size = 13
+bbcode_enabled = true
+text = "[center]Password[/center]
+"
+fit_content = true
+
+[node name="VBoxContainer3" type="VBoxContainer" parent="Control/HBoxContainer" unique_id=1920115212]
+visible = false
+layout_mode = 2
+
+[node name="ButtonNewPass" type="Button" parent="Control/HBoxContainer/VBoxContainer3" unique_id=1596078642]
+material = SubResource("ShaderMaterial_87uhg")
+layout_mode = 2
+theme_override_constants/icon_max_width = 67
+icon = ExtResource("3_ndlf7")
+flat = true
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Control/HBoxContainer/VBoxContainer3" unique_id=984512987]
+layout_mode = 2
+theme_override_fonts/normal_font = ExtResource("4_87uhg")
+theme_override_font_sizes/normal_font_size = 13
+bbcode_enabled = true
+text = "[center]Password (UPDATED!)[/center]
+"
+fit_content = true
+
+[node name="TextureButton" type="TextureButton" parent="Control" unique_id=1668847751]
+visible = false
+layout_mode = 0
+offset_left = 890.0
+offset_top = 126.0
+offset_right = 1540.0
+offset_bottom = 638.0
+scale = Vector2(0.05, 0.05)
+texture_normal = ExtResource("3_cyams")
+
+[node name="Panel" type="ColorRect" parent="Control" unique_id=1132994827]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 2.0
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_behavior_recursive = 1
+color = Color(0, 0, 0, 0.5058824)
+
+[node name="Button" type="Button" parent="Control" unique_id=1510448837]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 605.0
+offset_right = 526.0
+offset_bottom = 869.0
+scale = Vector2(0.15, 0.15)
+theme_override_fonts/font = ExtResource("4_87uhg")
+theme_override_font_sizes/font_size = 64
+text = "Exit"
+icon = ExtResource("10_v6br0")
+flat = true
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=1394716531]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.508, -0.038)
+size = Vector3(0.29315186, 0.44870606, 0.1)
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="CSGBox3D" unique_id=1662692125]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.22789913, 0)
+radius = 0.332
+height = 0.021
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="." unique_id=219994318]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.17679399, -0.7489283, -0.5870429)
+size = Vector3(0.7524414, 0.06298828, 0.34033203)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="." unique_id=1968284129]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.43124932, -0.7489283, -0.5904896)
+size = Vector3(0.13311768, 0.06298828, 0.22485352)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=926569113]
+stream = ExtResource("10_140lf")
+
+[connection signal="pressed" from="Control/HBoxContainer/VBoxContainer/ButtonDoc" to="Control" method="_on_button_doc_pressed"]
+[connection signal="pressed" from="Control/HBoxContainer/VBoxContainer2/ButtonPass" to="Control" method="_on_button_pass_pressed"]
+[connection signal="pressed" from="Control/HBoxContainer/VBoxContainer3/ButtonNewPass" to="Control" method="_on_button_new_pass_pressed"]
+[connection signal="pressed" from="Control/TextureButton" to="Control" method="_on_x_button_pressed"]
+[connection signal="pressed" from="Control/Button" to="StaticBody3D" method="_on_button_pressed"]

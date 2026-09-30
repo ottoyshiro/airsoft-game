@@ -1,0 +1,455 @@
+[gd_scene format=3 uid="uid://colidp8kw3dn4"]
+
+[ext_resource type="PackedScene" uid="uid://b006yr3xh8tns" path="res://Scenes/Items/device_view_menu.tscn" id="1_n45e2"]
+[ext_resource type="PackedScene" uid="uid://clvcoocr5id0p" path="res://Scenes/Items/cube_view.tscn" id="2_1ehe0"]
+[ext_resource type="Shader" uid="uid://bom2l3uppib8w" path="res://Scripts/player.gdshader" id="3_n45e2"]
+[ext_resource type="Shader" uid="uid://cftbecr5ebr5l" path="res://Assets/Shaders/player-glitch.gdshader" id="4_opfnp"]
+[ext_resource type="FontFile" uid="uid://c3xmoq3uc514" path="res://Assets/Fonts/PixelifySans-VariableFont_wght.ttf" id="5_cp0ys"]
+[ext_resource type="PackedScene" uid="uid://bxfgdxcuoidbq" path="res://Scenes/Items/cube_view_menu.tscn" id="6_opfnp"]
+[ext_resource type="AudioStream" uid="uid://6i63srap5npl" path="res://Assets/Sounds/mixkit-synth-suspense-music-681.wav" id="7_cp0ys"]
+
+[sub_resource type="GDScript" id="GDScript_1ehe0"]
+resource_name = "main_menu"
+script/source = "extends CanvasLayer
+
+@onready var device_view: Node3D = $Node3D/device_view_menu
+@onready var glitch: ColorRect = $UI/Glitch
+@onready var flash: ColorRect = $UI/Flash
+@onready var rich_text_label: RichTextLabel = $UI/RichTextLabel
+@onready var audio_stream_player_3d: AudioStreamPlayer3D = $AudioStreamPlayer3D
+
+func _ready():
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	audio_stream_player_3d.play()
+	run_device_loop()
+	run_title_loop()
+
+
+func run_device_loop():
+	while true:
+		await get_tree().create_timer(1.0).timeout
+		device_view.change_device()
+		GameManager.is_on_past = !GameManager.is_on_past
+		await glitch.change()
+		await get_tree().create_timer(4.0).timeout
+
+func run_title_loop():
+	while true:
+		await get_tree().create_timer(1.0).timeout
+		# Alguns glitches rápidos
+		for i in range(20):
+			rich_text_label.glitch_text()
+			await get_tree().create_timer(0.05).timeout
+
+		# Volta ao normal
+		rich_text_label.restore_text()
+
+		# Fica legível por bastante tempo
+		await get_tree().create_timer(4.0).timeout
+
+
+func _on_start_pressed() -> void:
+	GameManager.is_on_past = false
+	GameManager.documents = [false, false, false, false]
+	GameManager.has_prototype = false
+	get_tree().change_scene_to_packed(load(\"res://Scenes/mvp_level.tscn\"))
+
+
+func _on_quit_pressed() -> void:
+	get_tree().quit()
+"
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ce3w2"]
+sky_top_color = Color(0.09516462, 0.057127975, 0.29151076, 1)
+sky_horizon_color = Color(0.52895737, 0.53753686, 0.55470467, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_n45e2"]
+sky_material = SubResource("ProceduralSkyMaterial_ce3w2")
+
+[sub_resource type="Environment" id="Environment_opfnp"]
+background_mode = 2
+sky = SubResource("Sky_n45e2")
+tonemap_mode = 2
+glow_enabled = true
+fog_enabled = true
+fog_light_color = Color(0.5991898, 0.6328133, 0.68511367, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yhxw7"]
+shader = ExtResource("3_n45e2")
+shader_parameter/texture_mode = 1
+shader_parameter/quantize_size = 1
+shader_parameter/snap_to_world = false
+shader_parameter/limit_subpixels = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_trj04"]
+shader = ExtResource("4_opfnp")
+shader_parameter/shake_power = 0.03
+shader_parameter/shake_rate = 1.0
+shader_parameter/shake_speed = 5.0
+shader_parameter/shake_block_size = 30.5
+shader_parameter/shake_color_rate = 0.01
+
+[sub_resource type="GDScript" id="GDScript_16hvj"]
+resource_name = "glitch"
+script/source = "extends ColorRect
+
+#@onready var control: Control = $\"../../crosshair/Control\"
+
+
+func _ready() -> void:
+	self.visible = false
+
+func change():
+	self.visible = true
+	#control.visible = false
+	await get_tree().create_timer(1).timeout
+	self.visible = false
+	#control.visible = true
+"
+
+[sub_resource type="GDScript" id="GDScript_n45e2"]
+resource_name = "title"
+script/source = "extends RichTextLabel
+
+var original_text = \"Echo's Paradox\"
+
+func glitch_text():
+	var chars = \"!@#$%&*ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\"
+
+	var result = \"\"
+
+	for i in original_text.length():
+		if randf() < 0.2:
+			result += chars[randi() % chars.length()]
+		else:
+			result += original_text[i]
+
+	self.text = result
+
+func restore_text():
+	self.text = original_text
+"
+
+[sub_resource type="Animation" id="Animation_n45e2"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CubeView:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.19376713, -0.31764597)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CubeView:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_cp0ys"]
+resource_name = "device_rotation"
+length = 20.0
+loop_mode = 2
+
+[sub_resource type="Animation" id="Animation_opfnp"]
+resource_name = "rotation"
+length = 5.0
+loop_mode = 2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CubeView:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0.19376713, -0.31764597), Vector3(0, 0.2879464, -0.31764597)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CubeView:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1.4333333, 2.7, 5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0.27925268, -0.62831855, 0), Vector3(0.10122909, -1.1089823, -0.3738495), Vector3(-0.2443461, -2.0420353, -1.0995574)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cp0ys"]
+_data = {
+&"RESET": SubResource("Animation_n45e2"),
+&"device_rotation": SubResource("Animation_cp0ys"),
+&"rotation": SubResource("Animation_opfnp")
+}
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n45e2"]
+bg_color = Color(0.45668572, 0.36892056, 0.9999754, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.62243897, 0.6163384, 0.9999991, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+corner_detail = 1
+expand_margin_left = 12.0
+expand_margin_right = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_opfnp"]
+bg_color = Color(0.13725491, 0, 0.4117647, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.62243897, 0.6163384, 0.9999991, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+corner_detail = 1
+expand_margin_left = 12.0
+expand_margin_right = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cp0ys"]
+bg_color = Color(0.45668572, 0.36892056, 0.9999754, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.62243897, 0.6163384, 0.9999991, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+corner_detail = 1
+expand_margin_left = 12.0
+expand_margin_right = 12.0
+
+[sub_resource type="Theme" id="Theme_yhxw7"]
+default_font = ExtResource("5_cp0ys")
+Button/colors/font_color = Color(1, 1, 1, 1)
+Button/colors/font_hover_color = Color(0.26922485, 0.00061597733, 0.73944503, 1)
+Button/colors/font_pressed_color = Color(0.37150556, 0.000824576, 0.987853, 1)
+Button/font_sizes/font_size = 40
+Button/fonts/font = ExtResource("5_cp0ys")
+Button/styles/hover = SubResource("StyleBoxFlat_n45e2")
+Button/styles/normal = SubResource("StyleBoxFlat_opfnp")
+Button/styles/pressed = SubResource("StyleBoxFlat_cp0ys")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_trj04"]
+bg_color = Color(0.45668572, 0.36892056, 0.9999754, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.62243897, 0.6163384, 0.9999991, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+corner_detail = 1
+expand_margin_left = 12.0
+expand_margin_right = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_16hvj"]
+bg_color = Color(0.13725491, 0, 0.4117647, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.62243897, 0.6163384, 0.9999991, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+corner_detail = 1
+expand_margin_left = 12.0
+expand_margin_right = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vr1f0"]
+bg_color = Color(0.45668572, 0.36892056, 0.9999754, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.62243897, 0.6163384, 0.9999991, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+corner_detail = 1
+expand_margin_left = 12.0
+expand_margin_right = 12.0
+
+[sub_resource type="Theme" id="Theme_t1dhk"]
+default_font = ExtResource("5_cp0ys")
+Button/colors/font_color = Color(1, 1, 1, 1)
+Button/colors/font_hover_color = Color(0.26922485, 0.00061597733, 0.73944503, 1)
+Button/colors/font_pressed_color = Color(0.37150556, 0.000824576, 0.987853, 1)
+Button/font_sizes/font_size = 40
+Button/fonts/font = ExtResource("5_cp0ys")
+Button/styles/hover = SubResource("StyleBoxFlat_trj04")
+Button/styles/normal = SubResource("StyleBoxFlat_16hvj")
+Button/styles/pressed = SubResource("StyleBoxFlat_vr1f0")
+
+[node name="MainMenu" type="CanvasLayer" unique_id=1727360077]
+process_mode = 3
+script = SubResource("GDScript_1ehe0")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1725875731]
+environment = SubResource("Environment_opfnp")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1093402029]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0.73816943, 3.1832807, 1.9938805)
+shadow_enabled = true
+
+[node name="Node3D" type="Node3D" parent="." unique_id=874846012]
+transform = Transform3D(-2.9900347e-09, 0.06840402, -0.18793853, -0.2, -8.742278e-09, 5.293956e-23, -8.215054e-09, 0.18793853, 0.06840402, -0.2570999, 0.34520102, 0.21589684)
+
+[node name="device_view_menu" parent="Node3D" unique_id=76835500 instance=ExtResource("1_n45e2")]
+transform = Transform3D(0.45618168, 0.3043591, -0.83621985, -0.30435908, 0.93638515, 0.17477982, 0.8362198, 0.17477973, 0.5197963, 1.1920929e-07, -3.435211, 1.1316684)
+
+[node name="Marker3D" type="Marker3D" parent="Node3D/device_view_menu" unique_id=632517725]
+transform = Transform3D(-4.4494348, -2.2809098, -5.8207693e-08, 0.780117, -1.5217966, 4.6984644, -2.1433537, 4.1811004, 1.7101012, -0.8364291, 1.7763381, 0.26984906)
+
+[node name="Marker3D2" type="Marker3D" parent="Node3D/device_view_menu" unique_id=214258392]
+transform = Transform3D(-4.449435, -2.2809103, -5.8207693e-08, 0.78011703, -1.5217966, 4.6984644, -2.143354, 4.181101, 1.7101012, -2.6949844, -4.2475023, 0.07997608)
+
+[node name="Marker3D6" type="Marker3D" parent="Node3D/device_view_menu" unique_id=53104253]
+transform = Transform3D(-4.449435, -2.2809105, -5.8207693e-08, 0.780117, -1.5217967, 4.6984644, -2.1433537, 4.181101, 1.7101012, -1.6875335, -10.105349, -4.143495)
+
+[node name="Marker3D3" type="Marker3D" parent="Node3D/device_view_menu" unique_id=1054982828]
+transform = Transform3D(-4.4494348, -2.2809098, -5.8207693e-08, 0.780117, -1.5217966, 4.6984644, -2.1433537, 4.1811004, 1.7101012, -5.075074, -2.2330725, -3.8112626)
+
+[node name="Marker3D4" type="Marker3D" parent="Node3D/device_view_menu" unique_id=327209347]
+transform = Transform3D(-4.4494343, -2.2809093, -5.8207693e-08, 0.78011686, -1.5217963, 4.6984644, -2.1433535, 4.1811, 1.7101012, -8.653609, 0.70430803, -6.942173)
+
+[node name="Marker3D5" type="Marker3D" parent="Node3D/device_view_menu" unique_id=1233301196]
+transform = Transform3D(-4.4494343, -2.2809093, -5.8207693e-08, 0.78011686, -1.5217963, 4.6984644, -2.1433535, 4.1811, 1.7101012, -10.909646, -9.113616, -7.857831)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=2047246492]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.502, 0.533)
+current = true
+
+[node name="CubeView" parent="." unique_id=43290667 instance=ExtResource("2_1ehe0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19376713, -0.31764597)
+visible = false
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=331734822]
+
+[node name="Texture" type="ColorRect" parent="UI" unique_id=62452610]
+material = SubResource("ShaderMaterial_yhxw7")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_behavior_recursive = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="Glitch" type="ColorRect" parent="UI" unique_id=373646372]
+visible = false
+material = SubResource("ShaderMaterial_trj04")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_behavior_recursive = 1
+script = SubResource("GDScript_16hvj")
+
+[node name="Flash" type="ColorRect" parent="UI" unique_id=1742583302]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.4351923, 0.43519226, 0.43519226, 1)
+
+[node name="RichTextLabel" type="RichTextLabel" parent="UI" unique_id=876129628]
+custom_minimum_size = Vector2(600, 0)
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 111.0
+offset_right = 300.0
+offset_bottom = 188.0
+grow_horizontal = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("5_cp0ys")
+theme_override_font_sizes/normal_font_size = 64
+text = "Echo's Paradox"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 2
+script = SubResource("GDScript_n45e2")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=47207112]
+libraries/ = SubResource("AnimationLibrary_cp0ys")
+autoplay = &"rotation"
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=81374070]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.2520276, 0.2520277, 0.25202748, 0.22352941)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1456999040]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -48.0
+offset_top = -33.0
+offset_right = 48.0
+offset_bottom = 33.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Start" type="Button" parent="VBoxContainer" unique_id=1586713755]
+layout_mode = 2
+theme = SubResource("Theme_yhxw7")
+theme_override_fonts/font = ExtResource("5_cp0ys")
+theme_override_font_sizes/font_size = 44
+text = "Start Game"
+
+[node name="Quit" type="Button" parent="VBoxContainer" unique_id=544492556]
+layout_mode = 2
+theme = SubResource("Theme_t1dhk")
+theme_override_fonts/font = ExtResource("5_cp0ys")
+text = "Quit Game"
+
+[node name="cube_view_menu" parent="." unique_id=643471714 instance=ExtResource("6_opfnp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, -0.3)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=434156677]
+stream = ExtResource("7_cp0ys")
+volume_db = -30.0
+
+[connection signal="pressed" from="VBoxContainer/Start" to="." method="_on_start_pressed"]
+[connection signal="pressed" from="VBoxContainer/Quit" to="." method="_on_quit_pressed"]

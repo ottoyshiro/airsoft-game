@@ -1,0 +1,439 @@
+[gd_scene format=3 uid="uid://c1dkasepy4jo"]
+
+[ext_resource type="Material" uid="uid://bv712mopsvqcw" path="res://Scenes/Furniture/Door.tres" id="1_4viqe"]
+
+[sub_resource type="GDScript" id="GDScript_sct2t"]
+script/source = "extends Node3D
+@onready var animation_player: AnimationPlayer = %AnimationPlayer
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed(\"left_click\"):
+		animation_player.play(\"shoot\")
+"
+
+[sub_resource type="BoxMesh" id="BoxMesh_sct2t"]
+size = Vector3(0.69921875, 0.2, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4viqe"]
+resource_name = "Door"
+cull_mode = 2
+albedo_color = Color(0.36282945, 0.36282945, 0.36282945, 1)
+metallic = 1.0
+roughness = 0.47272727
+
+[sub_resource type="BoxMesh" id="BoxMesh_hodvb"]
+size = Vector3(0.42579347, 0.15810546, 0.09494629)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gddgj"]
+size = Vector3(0.033520505, 0.087817386, 0.092321776)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_p8k2t"]
+top_radius = 0.03125
+bottom_radius = 0.03125
+height = 0.14999999
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2cx0r"]
+albedo_color = Color(0.79587686, 0.31138888, 0.025873745, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hiie7"]
+size = Vector3(0.039746094, 0.06386109, 0.06453247)
+
+[sub_resource type="BoxMesh" id="BoxMesh_nnwud"]
+size = Vector3(0.039746094, 0.06386109, 0.11873169)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ms3gb"]
+size = Vector3(0.039746094, 0.06386109, 0.21045418)
+
+[sub_resource type="Animation" id="Animation_dk5gl"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance3D4:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.09212745, 0.27857184, -0.44932702)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MeshInstance3D2:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.04614825, 0.24511902, -0.45037842)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("MeshInstance3D6:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.13218704, 0.19703576, -0.44932702)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("MeshInstance3D5:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.24109504, 0.2608749, -0.44932702)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("muzzle:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.4888937, 0.44797257, -0.4492716)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("MeshInstance3D7:position")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.120494574, 0.29951566, -0.45136112)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("MeshInstance3D:position")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.15039063, 0.4, -0.45000002)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("MeshInstance3D:rotation")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("MeshInstance3D2:rotation")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 1.5707964)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("MeshInstance3D7:rotation")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 1.0471976)]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("muzzle:rotation")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, -1.5707964)]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("MeshInstance3D4:rotation")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(1.3083838, 1.5707965, 1.5707965)]
+}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("MeshInstance3D5:rotation")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(1.1227113, -1.5707964, -1.5707964)]
+}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("MeshInstance3D6:rotation")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.22040258, -1.5707964, -1.5707964)]
+}
+
+[sub_resource type="Animation" id="Animation_kw0bs"]
+resource_name = "shoot"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance3D4:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.09212745, 0.27857184, -0.44932702), Vector3(0.07232384, 0.25894544, -0.44932702), Vector3(0.09212745, 0.27857184, -0.44932702)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MeshInstance3D2:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(-0.04614825, 0.24511902, -0.45037842), Vector3(-0.04888801, 0.22549261, -0.45037842), Vector3(-0.04614825, 0.24511902, -0.45037842)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("MeshInstance3D6:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.13218704, 0.19703576, -0.44932702), Vector3(0.12944728, 0.17740935, -0.44932702), Vector3(0.13218704, 0.19703576, -0.44932702)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("MeshInstance3D5:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.24109504, 0.2608749, -0.44932702), Vector3(0.23835528, 0.24124849, -0.44932702), Vector3(0.24109504, 0.2608749, -0.44932702)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("muzzle:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.4888937, 0.44797257, -0.4492716), Vector3(0.48615393, 0.42834616, -0.4492716), Vector3(0.4888937, 0.44797257, -0.4492716)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("MeshInstance3D7:position")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(-0.120494574, 0.29951566, -0.45136112), Vector3(-0.12323433, 0.27988926, -0.45136112), Vector3(-0.120494574, 0.29951566, -0.45136112)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("MeshInstance3D:position")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.15039063, 0.4, -0.45000002), Vector3(0.14765087, 0.3803736, -0.45000002), Vector3(0.15039063, 0.4, -0.45000002)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("MeshInstance3D:rotation")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0, 0.10999999, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0, 0.0264823), Vector3(0, 0, 0)]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("MeshInstance3D2:rotation")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0, 0.10999999, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 1.5707964), Vector3(0, 0, 1.5972787), Vector3(0, 0, 1.5707964)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("MeshInstance3D7:rotation")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0, 0.10999999, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 1.0471976), Vector3(0, 0, 1.0736799), Vector3(0, 0, 1.0471976)]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("muzzle:rotation")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0, 0.10999999, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, -1.5707964), Vector3(0, 0, -1.544314), Vector3(0, 0, -1.5707964)]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("MeshInstance3D4:rotation")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0, 0.10999999, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(1.3083838, 1.5707965, 1.5707965), Vector3(1.2819016, 1.5707965, 1.5707965), Vector3(1.3083838, 1.5707965, 1.5707965)]
+}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("MeshInstance3D5:rotation")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0, 0.10999999, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(1.1227113, -1.5707964, -1.5707964), Vector3(1.1491935, -1.5707964, -1.5707964), Vector3(1.1227113, -1.5707964, -1.5707964)]
+}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("MeshInstance3D6:rotation")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"times": PackedFloat32Array(0, 0.10999999, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.22040258, -1.5707964, -1.5707964), Vector3(0.2468849, -1.5707964, -1.5707964), Vector3(0.22040258, -1.5707964, -1.5707964)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4viqe"]
+_data = {
+&"RESET": SubResource("Animation_dk5gl"),
+&"shoot": SubResource("Animation_kw0bs")
+}
+
+[node name="gun_view" type="Node3D" unique_id=1159778503]
+script = SubResource("GDScript_sct2t")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=643053673]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15039063, 0.4, -0.45000002)
+mesh = SubResource("BoxMesh_sct2t")
+surface_material_override/0 = SubResource("StandardMaterial3D_4viqe")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=1948857391]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, -0.04614825, 0.24511902, -0.45037842)
+mesh = SubResource("BoxMesh_hodvb")
+surface_material_override/0 = ExtResource("1_4viqe")
+
+[node name="MeshInstance3D7" type="MeshInstance3D" parent="." unique_id=491307924]
+transform = Transform3D(0.49999997, -0.86602545, 0, 0.86602545, 0.49999997, 0, 0, 0, 1, -0.120494574, 0.29951566, -0.45136112)
+mesh = SubResource("BoxMesh_gddgj")
+surface_material_override/0 = ExtResource("1_4viqe")
+
+[node name="muzzle" type="MeshInstance3D" parent="." unique_id=178749636]
+transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, 0.4888937, 0.44797257, -0.4492716)
+mesh = SubResource("CylinderMesh_p8k2t")
+surface_material_override/0 = SubResource("StandardMaterial3D_2cx0r")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="." unique_id=936732532]
+transform = Transform3D(0.96576685, 5.5772644e-09, 0.2594112, 0.2594112, -4.2263462e-08, -0.96576685, 5.5772627e-09, 1.0000002, -4.2263448e-08, 0.09212745, 0.27857184, -0.44932702)
+mesh = SubResource("BoxMesh_hiie7")
+surface_material_override/0 = ExtResource("1_4viqe")
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="." unique_id=45061404]
+transform = Transform3D(0.9012782, -4.3152584e-09, -0.43324032, -0.43324032, -1.8937545e-08, -0.9012782, -4.3152566e-09, 1.0000002, -1.8937536e-08, 0.24109504, 0.2608749, -0.44932702)
+mesh = SubResource("BoxMesh_nnwud")
+surface_material_override/0 = ExtResource("1_4viqe")
+
+[node name="MeshInstance3D6" type="MeshInstance3D" parent="." unique_id=2142175325]
+transform = Transform3D(0.21862246, -3.41551e-08, -0.9758094, -0.9758094, -4.265399e-08, -0.21862246, -3.4155093e-08, 1.0000001, -4.2653983e-08, 0.13218704, 0.19703576, -0.44932702)
+mesh = SubResource("BoxMesh_ms3gb")
+surface_material_override/0 = ExtResource("1_4viqe")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1427357277]
+unique_name_in_owner = true
+libraries/ = SubResource("AnimationLibrary_4viqe")
+
+[node name="muzzle_ref" type="Marker3D" parent="." unique_id=382840369]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0.84552866, 0.44823128, -0.44423345)
